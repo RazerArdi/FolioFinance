@@ -1,17 +1,21 @@
+// Models/stock_data.dart
 class StockData {
   final String time;
   final double price;
 
   StockData(this.time, this.price);
-}
 
-class ChartData {
-  final String symbol;
-  final String name;
-  final double price;
-  final double change;
-  final List<StockData> stockData;
-  final String image;
+  Map<String, dynamic> toMap() {
+    return {
+      'time': time,
+      'price': price,
+    };
+  }
 
-  ChartData(this.symbol, this.name, this.price, this.change, this.stockData, this.image);
+  factory StockData.fromMap(Map<String, dynamic> map) {
+    return StockData(
+      map['time'],
+      map['price'],
+    );
+  }
 }
