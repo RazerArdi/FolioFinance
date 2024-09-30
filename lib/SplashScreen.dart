@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:page_transition/page_transition.dart';
-import 'pluang.dart';
+import 'MainPage.dart';
 
 // Halaman untuk menampilkan animasi splash screen
 class AnimatedSplashScreenPage extends StatelessWidget {
