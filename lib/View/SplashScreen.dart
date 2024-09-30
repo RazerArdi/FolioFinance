@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:page_transition/page_transition.dart';
-import 'MainPage.dart';
+import 'package:get/get.dart'; // Import GetX
+import 'package:FFinance/Controllers/SplashController.dart'; // Import your SplashController
 
 // Halaman untuk menampilkan animasi splash screen
 class AnimatedSplashScreenPage extends StatelessWidget {
@@ -27,7 +28,7 @@ class AnimatedSplashScreenPage extends StatelessWidget {
           AnimatedSplashScreen(
             splash: 'assets/Images/Logo_umm.png', // Your splash image
             nextScreen: const SplashScreen(), // Halaman berikutnya setelah splash
-            splashTransition: SplashTransition.fadeTransition, // Make sure this is defined
+            splashTransition: SplashTransition.fadeTransition, // Transition effect
             pageTransitionType: PageTransitionType.fade,
             backgroundColor: Colors.transparent,
             duration: 1000,
@@ -44,12 +45,8 @@ class SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Menunggu 3 detik sebelum berpindah ke halaman PluangHome
-    Future.delayed(const Duration(seconds: 3), () {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => HalamanUtama()), // Navigate to PluangHome
-      );
-    });
+    final SplashController controller = Get.put(SplashController());
+    controller.navigateToHome(); // Start navigation
 
     return Scaffold(
       body: Container(
