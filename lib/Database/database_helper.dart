@@ -1,7 +1,6 @@
-// Database/database_helper.dart
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'chart_data.dart'; // Import your chart data if necessary
+import 'chart_data.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -23,7 +22,6 @@ class DatabaseHelper {
       path,
       version: 1,
       onCreate: (db, version) async {
-        // Create tables here
         await db.execute('''
           CREATE TABLE chart_data(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -63,11 +61,9 @@ class DatabaseHelper {
         name: maps[i]['name'],
         price: maps[i]['price'],
         change: maps[i]['change'],
-        stockHistory: [], // Modify to fetch stock history if necessary
+        stockHistory: [],
         image: maps[i]['image'],
       );
     });
   }
-
-// Implement other CRUD operations as needed...
 }

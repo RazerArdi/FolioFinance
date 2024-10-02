@@ -1,4 +1,4 @@
-// Database/chart_data.dart
+
 import 'package:FFinance/Models/stock_data.dart';
 
 class ChartData {

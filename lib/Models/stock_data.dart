@@ -1,4 +1,3 @@
-// Models/stock_data.dart
 class StockData {
   final String time;
   final double price;

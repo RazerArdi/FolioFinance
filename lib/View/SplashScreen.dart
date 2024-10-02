@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:get/get.dart'; // Import GetX
-import 'package:FFinance/Controllers/SplashController.dart'; // Import your SplashController
+import 'package:get/get.dart';
+import 'package:FFinance/Controllers/SplashController.dart';
 
-// Halaman untuk menampilkan animasi splash screen
 class AnimatedSplashScreenPage extends StatelessWidget {
   const AnimatedSplashScreenPage({Key? key}) : super(key: key);
 
@@ -14,7 +13,6 @@ class AnimatedSplashScreenPage extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Latar belakang dengan gradien warna
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -24,11 +22,10 @@ class AnimatedSplashScreenPage extends StatelessWidget {
               ),
             ),
           ),
-          // Widget AnimatedSplashScreen untuk menampilkan logo dengan animasi transisi
           AnimatedSplashScreen(
-            splash: 'assets/Images/Logo_umm.png', // Your splash image
-            nextScreen: const SplashScreen(), // Halaman berikutnya setelah splash
-            splashTransition: SplashTransition.fadeTransition, // Transition effect
+            splash: 'assets/Images/Logo_umm.png',
+            nextScreen: const SplashScreen(),
+            splashTransition: SplashTransition.fadeTransition,
             pageTransitionType: PageTransitionType.fade,
             backgroundColor: Colors.transparent,
             duration: 1000,
@@ -39,14 +36,13 @@ class AnimatedSplashScreenPage extends StatelessWidget {
   }
 }
 
-// Halaman SplashScreen yang ditampilkan setelah animasi splash
 class SplashScreen extends StatelessWidget {
   const SplashScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final SplashController controller = Get.put(SplashController());
-    controller.navigateToHome(); // Start navigation
+    controller.navigateToHome();
 
     return Scaffold(
       body: Container(
@@ -63,7 +59,7 @@ class SplashScreen extends StatelessWidget {
             Expanded(
               child: Center(
                 child: Image.asset(
-                  'assets/Images/Logo_umm.png', // Your splash image
+                  'assets/Images/Logo_umm.png',
                   width: 150,
                   height: 150,
                 ),
