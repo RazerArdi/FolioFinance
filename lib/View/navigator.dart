@@ -1,7 +1,12 @@
 import 'dart:io';
+import 'package:FFinance/Routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:FFinance/Controllers/main_controller.dart';
+import 'package:FFinance/View/Community.dart';
+import 'package:FFinance/View/Explore.dart';
+import 'package:FFinance/View/Market.dart';
+import 'package:FFinance/View/halaman_utama.dart';
 
 class TopNavigator extends StatelessWidget implements PreferredSizeWidget {
   final MainController controller = Get.find();
@@ -85,7 +90,9 @@ class BottomNavigator extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() => BottomNavigationBar(
       currentIndex: controller.selectedIndex.value,
-      onTap: controller.onTabChanged,
+      onTap: (index) {
+        controller.onTabChanged(index); // Update the selected index
+      },
       type: BottomNavigationBarType.fixed,
       selectedItemColor: Color(0xFF6750A4),
       unselectedItemColor: Colors.grey,

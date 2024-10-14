@@ -26,9 +26,7 @@ class Aes256Helper {
 
     final encrypter = Encrypter(AES(key));
     final decrypted = encrypter.decrypt(Encrypted.fromBase64(cipherText), iv: iv);
-    final decryptedText = decrypted;
-
-    return decryptedText;
+    return decrypted;
   }
 }
 
@@ -36,13 +34,3 @@ class AesKeys {
   final String key, iv;
   const AesKeys({required this.key, required this.iv});
 }
-
-
-/*
-final text = 'Hello, World!';
-final keys = Aes256Helper.generateRandomKeyAndIV();
-final cipherText = Aes256Helper.encrypt(text, keys);
-final decryptText = Aes256Helper.decrypt(cipherText, keys);
-print('Encrypted: $cipherText\n');
-print('Decrypted: $decryptText\n');
- */
