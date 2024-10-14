@@ -38,5 +38,4 @@ class MainController extends GetxController {
   void clearImage() {
     pickedImage.value = null;
   }
-
 }

@@ -40,13 +40,9 @@ class AesKeys {
 
 /*
 final text = 'Hello, World!';
-
 final keys = Aes256Helper.generateRandomKeyAndIV();
-
 final cipherText = Aes256Helper.encrypt(text, keys);
-
 final decryptText = Aes256Helper.decrypt(cipherText, keys);
-
 print('Encrypted: $cipherText\n');
 print('Decrypted: $decryptText\n');
  */
