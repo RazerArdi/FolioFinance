@@ -1,31 +1,35 @@
-// lib/View/halaman_utama.dart
-
 import 'package:FFinance/Controllers/main_controller.dart';
+import 'package:FFinance/Controllers/StockController.dart'; // Import StockController
+import 'package:FFinance/Models/stock_data.dart';
+import 'package:FFinance/Services/logo_service.dart';
 import 'package:FFinance/View/webview_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
-import 'package:FFinance/Database/chart_data.dart';
-import 'package:FFinance/Database/database_helper.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:FFinance/Models/stock_data.dart';
-import 'package:FFinance/Models/NewsArticle.dart'; // Import the NewsArticle model
+import 'package:FFinance/Models/NewsArticle.dart';
 import 'package:FFinance/Services/news_service.dart';
+import 'package:FFinance/Services/twelve_data_service.dart'; // Import StockService
 import 'package:intl/intl.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 class HalamanUtama extends StatelessWidget {
   final MainController controller = Get.put(MainController());
-  final DatabaseHelper databaseHelper = DatabaseHelper();
+  final StockController stockController = Get.put(
+      StockController()); // Initialize StockController
   final NewsService newsService = NewsService();
-  final RxList<NewsArticle> newsArticles = <NewsArticle>[].obs; // List of news articles
+  final LogoService stockService = LogoService(); // Initialize StockService
+  final RxList<NewsArticle> newsArticles = <NewsArticle>[]
+      .obs; // Observable for news articles
 
   HalamanUtama({Key? key}) : super(key: key) {
-    _fetchFinanceNews(); // Fetch finance news when the widget is created
+    _fetchFinanceNews(); // Fetch news when the widget is created
+    stockController.fetchStockData(
+        "AAPL,MSFT,GOOGL"); // Fetch stock data for symbols
   }
 
   void _fetchFinanceNews() async {
     try {
-      final articles = await newsService.fetchFinanceNews(); // Fetch news articles
+      final articles = await newsService.fetchFinanceNews();
       newsArticles.assignAll(articles);
     } catch (e) {
       print('Error fetching finance news: $e');
@@ -42,23 +46,32 @@ class HalamanUtama extends StatelessWidget {
             children: [
               Text('Portofolio', style: TextStyle(fontSize: 16)),
               SizedBox(height: 4),
-              Obx(() => Text(
-                'Rp${controller.portfolioValue.value}',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              )),
+              Obx(() =>
+                  Text(
+                    'Rp${controller.portfolioValue.value}',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  )),
               SizedBox(height: 4),
-              Obx(() => Text(
-                'Imbal Hasil +Rp${controller.returnValue.value} (${controller.returnPercentage.value}%)',
-                style: TextStyle(color: Colors.green),
-              )),
+              Obx(() =>
+                  Text(
+                    'Imbal Hasil +Rp${controller.returnValue
+                        .value} (${controller.returnPercentage.value}%)',
+                    style: TextStyle(color: Colors.green),
+                  )),
               SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildMenuButton(icon: Icons.card_giftcard, text: 'Academy', onTap: () {}),
-                  _buildMenuButton(icon: Icons.compare_arrows, text: 'Share Send\nAnd Receive', onTap: () {}),
-                  _buildMenuButton(icon: Icons.wifi, text: 'Signals', onTap: () {}),
-                  _buildMenuButton(icon: Icons.more_horiz_sharp, text: 'Lainnya', onTap: () {}),
+                  _buildMenuButton(
+                      icon: Icons.card_giftcard, text: 'Academy', onTap: () {}),
+                  _buildMenuButton(icon: Icons.compare_arrows,
+                      text: 'Share Send\nAnd Receive',
+                      onTap: () {}),
+                  _buildMenuButton(
+                      icon: Icons.wifi, text: 'Signals', onTap: () {}),
+                  _buildMenuButton(icon: Icons.more_horiz_sharp,
+                      text: 'Lainnya',
+                      onTap: () {}),
                 ],
               ),
               SizedBox(height: 16),
@@ -68,9 +81,10 @@ class HalamanUtama extends StatelessWidget {
               SizedBox(height: 16),
               _buildCategorySelector(),
               SizedBox(height: 16),
-              Text('List', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('Stocks',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               SizedBox(height: 8),
-              ...chartData.map((data) => _buildListCard(data)).toList(),
+              _buildStockList(), // Display stock data
               SizedBox(height: 16),
               _buildAddAssetButton(),
             ],
@@ -89,7 +103,8 @@ class HalamanUtama extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuButton({required IconData icon, required String text, required VoidCallback onTap}) {
+  Widget _buildMenuButton(
+      {required IconData icon, required String text, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -127,7 +142,8 @@ class HalamanUtama extends StatelessWidget {
                       children: [
                         if (article.urlToImage.isNotEmpty)
                           ClipRRect(
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+                            borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(8)),
                             child: Image.network(
                               article.urlToImage,
                               fit: BoxFit.cover,
@@ -148,8 +164,10 @@ class HalamanUtama extends StatelessWidget {
                               ),
                               SizedBox(height: 4),
                               Text(
-                                DateFormat('yyyy-MM-dd – kk:mm').format(article.publishedAt),
-                                style: TextStyle(fontSize: 12, color: Colors.grey),
+                                DateFormat('yyyy-MM-dd – kk:mm').format(
+                                    article.publishedAt),
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.grey),
                               ),
                             ],
                           ),
@@ -166,18 +184,38 @@ class HalamanUtama extends StatelessWidget {
     );
   }
 
-  String _formatDate(String? date) {
-    if (date == null) return '';
-    DateTime parsedDate = DateTime.parse(date);
-    return "${parsedDate.day}/${parsedDate.month}/${parsedDate.year} ${parsedDate.hour}:${parsedDate.minute.toString().padLeft(2, '0')}"; // Format the date as per your requirement
-  }
-
   void _showFullTextDialog(BuildContext context, NewsArticle article) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => WebViewScreen(url: article.url), // Navigate to WebView
-      ),
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(article.title),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: [
+                Text(article.description ?? 'No content available.'),
+                SizedBox(height: 10),
+                if (article.url != null)
+                  TextButton(
+                    child: Text('Read more'),
+                    onPressed: () {
+                      // Navigate to WebView or external link
+                      Get.to(WebViewScreen(url: article.url));
+                    },
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: Text('Close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -192,14 +230,21 @@ class HalamanUtama extends StatelessWidget {
         children: [
           Icon(Icons.card_giftcard, color: Colors.white),
           SizedBox(width: 8),
-          Text('Save Up to 50% off!!!', style: TextStyle(fontSize: 16, color: Colors.white)),
+          Text('Save Up to 50% off!!!',
+              style: TextStyle(fontSize: 16, color: Colors.white)),
         ],
       ),
     );
   }
 
   Widget _buildCategorySelector() {
-    final categories = ['Kategori 1', 'Kategori 2', 'Kategori 3', 'Kategori 4', 'Kategori 5'];
+    final categories = [
+      'Kategori 1',
+      'Kategori 2',
+      'Kategori 3',
+      'Kategori 4',
+      'Kategori 5'
+    ];
 
     return Container(
       height: 50,
@@ -227,76 +272,6 @@ class HalamanUtama extends StatelessWidget {
     );
   }
 
-  Widget _buildListCard(ChartData data) {
-    Color lineColor = data.change > 0 ? Colors.green : Colors.red;
-
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8.0),
-              child: Image.asset(
-                data.image,
-                width: 60,
-                height: 100,
-                fit: BoxFit.cover,
-              ),
-            ),
-            SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    data.symbol,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    data.name,
-                    style: TextStyle(fontSize: 14),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    '\$${data.price.toStringAsFixed(2)}',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    '${data.change}%',
-                    style: TextStyle(fontSize: 14, color: lineColor),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              width: 100,
-              height: 60,
-              child: SfCartesianChart(
-                primaryXAxis: CategoryAxis(isVisible: false),
-                primaryYAxis: NumericAxis(isVisible: false),
-                series: [
-                  LineSeries<StockData, String>(
-                    dataSource: data.stockHistory,
-                    xValueMapper: (StockData stockData, _) => stockData.time,
-                    yValueMapper: (StockData stockData, _) => stockData.price,
-                    color: lineColor,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildAddAssetButton() {
     return GestureDetector(
       onTap: () {
@@ -305,10 +280,6 @@ class HalamanUtama extends StatelessWidget {
       child: Container(
         alignment: Alignment.center,
         padding: EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -316,15 +287,115 @@ class HalamanUtama extends StatelessWidget {
             SizedBox(width: 8),
             Text(
               'Tambahkan Asset',
-              style: TextStyle(
-                color: Colors.blue,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: Colors.blue,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildStockList() {
+    return Obx(() {
+      if (stockController.stockData.isEmpty) {
+        return Center(child: CircularProgressIndicator());
+      } else {
+        return Column(
+          children: stockController.stockData.entries.map((entry) {
+            // Ensure entry.value is a Map
+            if (entry.value is Map) {
+              final symbol = entry.key;
+              final values = entry.value['values'];
+
+              if (values is List && values.isNotEmpty) {
+                final timeSeries = values[0];
+                final price = timeSeries['close'] ?? 'N/A';
+                final percentChange = timeSeries['percent_change'] ?? '0.00';
+                final logoUrl = stockService.getLogoUrl(symbol);
+
+                List<StockData> stockHistory = values.map((data) =>
+                    StockData(
+                      time: data['datetime'],
+                      price: double.tryParse(data['close'] ?? '0.0') ?? 0.0,
+                    )).toList();
+
+                return Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ClipOval(
+                          child: Image.network(
+                            logoUrl,
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(Icons.error, size: 50);
+                            },
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(symbol, style: TextStyle(
+                                  fontWeight: FontWeight.bold)),
+                              Text('Price: \$${price}'),
+                              Text(
+                                '${percentChange}%',
+                                style: TextStyle(
+                                  color: double.tryParse(percentChange) !=
+                                      null &&
+                                      double.parse(percentChange) >= 0
+                                      ? Colors.green
+                                      : Colors.red,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          width: 100,
+                          height: 100,
+                          child: SfCartesianChart(
+                            primaryXAxis: CategoryAxis(isVisible: false),
+                            primaryYAxis: NumericAxis(isVisible: false),
+                            series: [
+                              LineSeries<StockData, String>(
+                                dataSource: stockHistory,
+                                xValueMapper: (StockData stockData,
+                                    _) => stockData.time,
+                                yValueMapper: (StockData stockData,
+                                    _) => stockData.price,
+                                color: Colors.blue,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              } else {
+                return Center(
+                    child: Text('No stock data available for $symbol.'));
+              }
+            } else {
+              return Center(
+                  child: Text('Unexpected data format for ${entry.key}'));
+            }
+          }).toList(),
+        );
+      }
+    });
   }
 }

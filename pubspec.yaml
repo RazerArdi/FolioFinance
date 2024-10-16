@@ -79,6 +79,9 @@ flutter:
     - assets/Images/General-Dynamics-Symbol.png
     - assets/Images/Logo_umm.png
     - assets/icon/ic_launcher.png
+    - assets/Images/Karina.png
+    - assets/Images/Ningning.png
+    - assets/Images/Winter.png
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
