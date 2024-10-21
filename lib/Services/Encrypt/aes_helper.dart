@@ -4,7 +4,7 @@ import 'package:encrypt/encrypt.dart';
 class Aes256Helper {
   static AesKeys generateRandomKeyAndIV() {
     final key = Key.fromSecureRandom(32); // 32 bytes for AES-256
-    final iv = IV.fromSecureRandom(16); // 16 bytes for AES-256 in GCM mode
+    final iv = IV.fromSecureRandom(16); // 16 bytes for AES-256
 
     return AesKeys(key: base64Encode(key.bytes), iv: base64Encode(iv.bytes));
   }

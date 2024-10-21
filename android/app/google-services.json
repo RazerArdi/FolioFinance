@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1033485741493",
+    "project_id": "pemprograman-mobile-bb0d8",
+    "storage_bucket": "pemprograman-mobile-bb0d8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1033485741493:android:e4e9932f732c53471d7dfc",
+        "android_client_info": {
+          "package_name": "com.example.foliofinance"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIl5VOfeuveKoB0EnoRpJ2RjAuKlcljR0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
