@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class Market extends StatelessWidget {
   final Map<String, dynamic>? marketData;
 
-  Market({this.marketData});
+  const Market({super.key, this.marketData});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +29,7 @@ class Market extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'IHSG 7,520.60', // Data IHSG
             style: TextStyle(
               fontSize: 24,
@@ -37,20 +37,20 @@ class Market extends StatelessWidget {
               color: Colors.black,
             ),
           ),
-          SizedBox(height: 8),
-          Text(
+          const SizedBox(height: 8),
+          const Text(
             '+40.52 (+0.54%)', // Perubahan IHSG
             style: TextStyle(
               fontSize: 18,
               color: Colors.green,
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           // Placeholder untuk chart IHSG
           Container(
             height: 200,
             color: Colors.grey[300],
-            child: Center(
+            child: const Center(
               child: Text(
                   'IHSG Chart Placeholder'), // Bisa diganti dengan widget Chart
             ),
@@ -67,14 +67,14 @@ class Market extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'Intraday',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -83,15 +83,15 @@ class Market extends StatelessWidget {
               _buildDetailItem('Low', '7,480.08'),
             ],
           ),
-          SizedBox(height: 16),
-          Text(
+          const SizedBox(height: 16),
+          const Text(
             'All Market',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -111,14 +111,14 @@ class Market extends StatelessWidget {
       children: [
         Text(
           value,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
         Text(
           title,
-          style: TextStyle(fontSize: 14, color: Colors.grey),
+          style: const TextStyle(fontSize: 14, color: Colors.grey),
         ),
       ],
     );
@@ -143,17 +143,17 @@ class Market extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'Trending',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           marketData != null && getTrendingStocks(marketData!).isNotEmpty
               ? _buildTrendingStocks(getTrendingStocks(marketData!))
-              : Text('No trending data available'),
+              : const Text('No trending data available'),
           // Fallback jika data trending tidak ada
         ],
       ),
@@ -186,14 +186,14 @@ class Market extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'Movers',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           _buildMoversList(),
         ],
       ),

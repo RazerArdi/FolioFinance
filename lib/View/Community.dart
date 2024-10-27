@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class Community extends StatefulWidget {
+  const Community({super.key});
+
   @override
   _CommunityState createState() => _CommunityState();
 }
@@ -61,10 +63,10 @@ class _CommunityState extends State<Community> with SingleTickerProviderStateMix
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Community'),
+        title: const Text('Community'),
         bottom: TabBar(
           controller: _tabController,
-          tabs: [
+          tabs: const [
             Tab(text: 'Latest'),
             Tab(text: 'Trending'),
             Tab(text: 'Popular'),
@@ -107,29 +109,29 @@ class _CommunityState extends State<Community> with SingleTickerProviderStateMix
                         backgroundImage: post['photoUrl'] != null
                             ? AssetImage(post['photoUrl'])
                             : null,
+                        radius: 24,
                         child: post['photoUrl'] == null
                             ? Text(
                                 post['username'][0].toUpperCase(),
-                                style: TextStyle(color: Colors.white),
+                                style: const TextStyle(color: Colors.white),
                               )
                             : null,
-                        radius: 24,
                       ),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               post['username'],
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
                             ),
                             Text(
                               post['time'],
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Colors.grey,
                                 fontSize: 12,
                               ),
@@ -140,7 +142,7 @@ class _CommunityState extends State<Community> with SingleTickerProviderStateMix
                       Chip(
                         label: Text(
                           post['sentiment'],
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white,
                           ),
                         ),
@@ -150,34 +152,34 @@ class _CommunityState extends State<Community> with SingleTickerProviderStateMix
                       ),
                     ],
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Text(
                     post['content'],
-                    style: TextStyle(fontSize: 14),
+                    style: const TextStyle(fontSize: 14),
                   ),
-                  SizedBox(height: 10),
-                  Divider(),
+                  const SizedBox(height: 10),
+                  const Divider(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.comment, size: 18, color: Colors.grey),
-                          SizedBox(width: 4),
+                          const Icon(Icons.comment, size: 18, color: Colors.grey),
+                          const SizedBox(width: 4),
                           Text('${post['comments']}'),
                         ],
                       ),
                       Row(
                         children: [
-                          Icon(Icons.thumb_up, size: 18, color: Colors.grey),
-                          SizedBox(width: 4),
+                          const Icon(Icons.thumb_up, size: 18, color: Colors.grey),
+                          const SizedBox(width: 4),
                           Text('${post['likes']}'),
                         ],
                       ),
                       Row(
                         children: [
-                          Icon(Icons.share, size: 18, color: Colors.grey),
-                          SizedBox(width: 4),
+                          const Icon(Icons.share, size: 18, color: Colors.grey),
+                          const SizedBox(width: 4),
                           Text('${post['shares']}'),
                         ],
                       ),

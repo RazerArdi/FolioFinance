@@ -8,25 +8,27 @@ import 'package:FFinance/View/Market.dart';
 import 'package:FFinance/View/halaman_utama.dart';
 
 class MainPage extends StatelessWidget {
-  final MainController controller = Get.put(MainController());
+  const MainPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final MainController controller = Get.put(MainController()); // Move this line here
+
     return Scaffold(
-      appBar: TopNavigator(),
+      appBar: const TopNavigator(),
       body: Obx(() {
         return IndexedStack(
           index: controller.selectedIndex.value,
           children: [
             HalamanUtama(),
-            Market(),
-            Community(),
-            Explore(),
+            const Market(),
+            const Community(),
+            const Explore(),
             // Add more pages as necessary
           ],
         );
       }),
-      bottomNavigationBar: BottomNavigator(),
+      bottomNavigationBar: const BottomNavigator(),
     );
   }
 }

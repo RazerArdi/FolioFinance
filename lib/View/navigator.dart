@@ -1,33 +1,30 @@
 import 'dart:io';
-import 'package:FFinance/Routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:FFinance/Controllers/main_controller.dart';
-import 'package:FFinance/View/Community.dart';
-import 'package:FFinance/View/Explore.dart';
-import 'package:FFinance/View/Market.dart';
-import 'package:FFinance/View/halaman_utama.dart';
 
 class TopNavigator extends StatelessWidget implements PreferredSizeWidget {
-  final MainController controller = Get.find();
+  const TopNavigator({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final MainController controller = Get.find(); // Move this line here
+
     return AppBar(
-      title: Text('Folio Finance'),
-      backgroundColor: Color(0xFF16329F),
+      title: const Text('Folio Finance'),
+      backgroundColor: const Color(0xFF16329F),
       foregroundColor: Colors.white,
       elevation: 0,
       actions: [
         IconButton(
           onPressed: () {},
-          icon: Icon(Icons.notifications_none),
+          icon: const Icon(Icons.notifications_none),
         ),
         IconButton(
           onPressed: () => _showImageSourceDialog(context),
           icon: Obx(() {
             return controller.pickedImage.value == null
-                ? Icon(Icons.person_outline)
+                ? const Icon(Icons.person_outline)
                 : CircleAvatar(
               backgroundImage: Image.file(
                 File(controller.pickedImage.value!.path),
@@ -44,30 +41,33 @@ class TopNavigator extends StatelessWidget implements PreferredSizeWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('TESTING'),
+          title: const Text('TESTING'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: Icon(Icons.photo_library),
-                title: Text('Galeri'),
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Galeri'),
                 onTap: () {
+                  final MainController controller = Get.find();
                   controller.pickImageFromGallery();
                   Navigator.pop(context);
                 },
               ),
               ListTile(
-                leading: Icon(Icons.camera_alt),
-                title: Text('Kamera'),
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Kamera'),
                 onTap: () {
+                  final MainController controller = Get.find();
                   controller.pickImageFromCamera();
                   Navigator.pop(context);
                 },
               ),
               ListTile(
-                leading: Icon(Icons.delete_forever),
-                title: Text('Hapus Foto'),
+                leading: const Icon(Icons.delete_forever),
+                title: const Text('Hapus Foto'),
                 onTap: () {
+                  final MainController controller = Get.find();
                   controller.clearImage();
                   Navigator.pop(context);
                 },
@@ -80,24 +80,27 @@ class TopNavigator extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
 
+
 class BottomNavigator extends StatelessWidget {
-  final MainController controller = Get.find();
+  const BottomNavigator({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final MainController controller = Get.find(); // Move this line here
+
     return Obx(() => BottomNavigationBar(
       currentIndex: controller.selectedIndex.value,
       onTap: (index) {
         controller.onTabChanged(index); // Update the selected index
       },
       type: BottomNavigationBarType.fixed,
-      selectedItemColor: Color(0xFF6750A4),
+      selectedItemColor: const Color(0xFF6750A4),
       unselectedItemColor: Colors.grey,
       showUnselectedLabels: true,
-      items: [
+      items: const [
         BottomNavigationBarItem(icon: Icon(Icons.money), label: 'Watchlist'),
         BottomNavigationBarItem(icon: Icon(Icons.public), label: 'Markets'),
         BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Community'),

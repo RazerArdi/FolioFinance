@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:encrypt/encrypt.dart'; // Import the encryption package
+// Import the encryption package
 import 'package:FFinance/Services/Encrypt/aes_helper.dart'; // Import the Aes256Helper class
 
 class TwelveDataService {

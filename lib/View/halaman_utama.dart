@@ -18,7 +18,7 @@ class HalamanUtama extends StatelessWidget {
   final LogoService stockService = LogoService();
   final RxList<NewsArticle> newsArticles = <NewsArticle>[].obs;
 
-  HalamanUtama({Key? key}) : super(key: key) {
+  HalamanUtama({super.key}) {
     _fetchFinanceNews();
     stockController.fetchStockData("AAPL,MSFT,GOOGL");
   }
@@ -40,18 +40,18 @@ class HalamanUtama extends StatelessWidget {
           ListView(
             padding: const EdgeInsets.all(16.0),
             children: [
-              Text('Portofolio', style: TextStyle(fontSize: 16)),
-              SizedBox(height: 4),
+              const Text('Portofolio', style: TextStyle(fontSize: 16)),
+              const SizedBox(height: 4),
               Obx(() => Text(
                 'Rp${controller.portfolioValue.value}',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               )),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Obx(() => Text(
                 'Imbal Hasil +Rp${controller.returnValue.value} (${controller.returnPercentage.value}%)',
-                style: TextStyle(color: Colors.green),
+                style: const TextStyle(color: Colors.green),
               )),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -61,17 +61,17 @@ class HalamanUtama extends StatelessWidget {
                   _buildMenuButton(icon: Icons.more_horiz_sharp, text: 'Lainnya', onTap: () {}),
                 ],
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               _buildBreakingNewsCarousel(context),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               _buildCashbackBanner(),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               _buildCategorySelector(),
-              SizedBox(height: 16),
-              Text('Stocks', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              SizedBox(height: 8),
+              const SizedBox(height: 16),
+              const Text('Stocks', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
               _buildStockList(),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               _buildAddAssetButton(),
             ],
           ),
@@ -80,8 +80,8 @@ class HalamanUtama extends StatelessWidget {
             right: 16,
             child: FloatingActionButton(
               onPressed: () {},
-              child: Icon(Icons.add),
               backgroundColor: Colors.blue,
+              child: const Icon(Icons.add),
             ),
           ),
         ],
@@ -96,7 +96,7 @@ class HalamanUtama extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, size: 32),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(text, textAlign: TextAlign.center),
         ],
       ),
@@ -104,11 +104,11 @@ class HalamanUtama extends StatelessWidget {
   }
 
   Widget _buildBreakingNewsCarousel(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 200,
       child: Obx(() {
         if (newsArticles.isEmpty) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         } else {
           return CardSwiper(
             cardsCount: newsArticles.length,
@@ -127,7 +127,7 @@ class HalamanUtama extends StatelessWidget {
                       children: [
                         if (article.urlToImage.isNotEmpty)
                           ClipRRect(
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
                             child: Image.network(
                               article.urlToImage,
                               fit: BoxFit.cover,
@@ -142,14 +142,14 @@ class HalamanUtama extends StatelessWidget {
                             children: [
                               Text(
                                 article.title,
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              SizedBox(height: 4),
+                              const SizedBox(height: 4),
                               Text(
                                 DateFormat('yyyy-MM-dd – kk:mm').format(article.publishedAt),
-                                style: TextStyle(fontSize: 12, color: Colors.grey),
+                                style: const TextStyle(fontSize: 12, color: Colors.grey),
                               ),
                             ],
                           ),
@@ -172,8 +172,8 @@ class HalamanUtama extends StatelessWidget {
         color: Colors.purple,
         borderRadius: BorderRadius.circular(8),
       ),
-      padding: EdgeInsets.all(16),
-      child: Row(
+      padding: const EdgeInsets.all(16),
+      child: const Row(
         children: [
           Icon(Icons.card_giftcard, color: Colors.white),
           SizedBox(width: 8),
@@ -186,7 +186,7 @@ class HalamanUtama extends StatelessWidget {
   Widget _buildCategorySelector() {
     final categories = ['Kategori 1', 'Kategori 2', 'Kategori 3', 'Kategori 4', 'Kategori 5'];
 
-    return Container(
+    return SizedBox(
       height: 50,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -198,8 +198,8 @@ class HalamanUtama extends StatelessWidget {
               child: Chip(label: Text(categories[index])),
             );
           } else {
-            return Padding(
-              padding: const EdgeInsets.only(right: 8.0),
+            return const Padding(
+              padding: EdgeInsets.only(right: 8.0),
               child: CircleAvatar(
                 radius: 25,
                 backgroundColor: Colors.blue,
@@ -219,8 +219,8 @@ class HalamanUtama extends StatelessWidget {
       },
       child: Container(
         alignment: Alignment.center,
-        padding: EdgeInsets.symmetric(vertical: 16),
-        child: Row(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.add_circle_outline_sharp, color: Colors.blue),
@@ -238,7 +238,7 @@ class HalamanUtama extends StatelessWidget {
   Widget _buildStockList() {
     return Obx(() {
       if (stockController.stockData.isEmpty) {
-        return Center(child: CircularProgressIndicator());
+        return const Center(child: CircularProgressIndicator());
       } else {
         return Column(
           children: stockController.stockData.entries.map((entry) {
@@ -273,19 +273,19 @@ class HalamanUtama extends StatelessWidget {
                           height: 50,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
-                            return Icon(Icons.error, size: 50);
+                            return const Icon(Icons.error, size: 50);
                           },
                         ),
                       ),
-                      SizedBox(width: 16),
+                      const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(symbol, style: TextStyle(fontWeight: FontWeight.bold)),
-                            Text('Price: \$${price}'),
+                            Text(symbol, style: const TextStyle(fontWeight: FontWeight.bold)),
+                            Text('Price: \$$price'),
                             Text(
-                              '${percentChange}%',
+                              '$percentChange%',
                               style: TextStyle(
                                 color: double.tryParse(percentChange) != null &&
                                     double.parse(percentChange) >= 0
@@ -300,8 +300,8 @@ class HalamanUtama extends StatelessWidget {
                         width: 100,
                         height: 100,
                         child: SfCartesianChart(
-                          primaryXAxis: CategoryAxis(isVisible: false),
-                          primaryYAxis: NumericAxis(isVisible: false),
+                          primaryXAxis: const CategoryAxis(isVisible: false),
+                          primaryYAxis: const NumericAxis(isVisible: false),
                           series: [
                             LineSeries<StockData, String>(
                               dataSource: stockHistory,

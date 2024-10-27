@@ -4,7 +4,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 class WebViewScreen extends StatelessWidget {
   final String url;
 
-  WebViewScreen({Key? key, required this.url}) : super(key: key);
+  const WebViewScreen({super.key, required this.url});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +15,7 @@ class WebViewScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Berita'),
+        title: const Text('Berita'),
       ),
       body: WebViewWidget(controller: controller),
     );

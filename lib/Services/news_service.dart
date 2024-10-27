@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:FFinance/Services/Encrypt/aes_helper.dart';
 import 'package:http/http.dart' as http;
 import 'package:FFinance/Models/NewsArticle.dart';
-import 'package:encrypt/encrypt.dart';
 
 class NewsService {
   late final AesKeys keys;  // Use late keyword
