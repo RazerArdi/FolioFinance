@@ -105,7 +105,7 @@ class BottomNavigator extends StatelessWidget {
         BottomNavigationBarItem(icon: Icon(Icons.public), label: 'Markets'),
         BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Community'),
         BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Explore'),
-        BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Notifications'),
+        BottomNavigationBarItem(icon: Icon(Icons.policy_rounded), label: 'Porto'),
       ],
     ));
   }
