@@ -30,46 +30,38 @@ class AuthController extends GetxController {
     isLoading.value = true;
 
     try {
-      // Log the email value
       print('Attempting to log in with email: "${email.value}"');
-      print('Checking sign-in methods for: ${email.value}');
 
-      // This line will throw if the email is not found, which is handled in the catch block
-      final signInMethods = await _auth.fetchSignInMethodsForEmail(email.value);
+      // Attempt to sign in
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email.value,
+        password: password.value,
+      );
 
-      // Attempt to sign in regardless of the previous check
-      try {
-        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-          email: email.value,
-          password: password.value,
-        );
-
-        if (userCredential.user != null) {
-          print('Login successful. User ID: ${userCredential.user?.uid}');
-          Get.offAllNamed(AppRoutes.home);
-        } else {
-          print('Login failed: userCredential.user is null');
-          _showLoginErrorMessage(); // Show error message
-        }
-      } catch (e) {
-        print('Sign-in failed: $e'); // Log error when signing in
-        _showLoginErrorMessage(); // Show error message
+      if (userCredential.user != null) {
+        print('Login successful. User ID: ${userCredential.user?.uid}');
+        Get.offAllNamed(AppRoutes.home);
+      }
+    } on FirebaseAuthException catch (e) {
+      // Handle specific error codes
+      if (e.code == 'user-not-found') {
+        print('No user found for that email.');
+        Get.snackbar('Login Error', 'No user found for that email.');
+      } else if (e.code == 'wrong-password') {
+        print('Wrong password provided for that user.');
+        Get.snackbar('Login Error', 'Wrong password provided.');
+      } else {
+        print('Error: $e');
+        Get.snackbar('Login Error', 'An unknown error occurred.');
       }
     } catch (e) {
-      print('Error checking email: $e'); // Log error when fetching sign-in methods
-      _showLoginErrorMessage(); // Show error message
+      print('Error: $e');
+      Get.snackbar('Login Error', 'An unexpected error occurred.');
     } finally {
       isLoading.value = false;
     }
-
-    // Check if the email exists and navigate to the registration page if it doesn't
-    final signInMethods = await _auth.fetchSignInMethodsForEmail(email.value);
-    if (signInMethods.isEmpty) {
-      _showLoginErrorMessage(); // Show error message
-      await Future.delayed(Duration(seconds: 4)); // Wait for 4 seconds
-      Get.offAllNamed(AppRoutes.register); // Navigate to registration page
-    }
   }
+
 
 // Helper method to show login error message
   void _showLoginErrorMessage() {
