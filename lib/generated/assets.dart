@@ -3,8 +3,11 @@ class Assets {
   Assets._();
 
   static const String assetsIconIcLauncher = 'assets/icon/ic_launcher.png';
+  static const String assetsVideosIntro = 'assets/videos/Intro.webm';
   static const String iconIcLauncher = 'assets/icon/ic_launcher.png';
+  static const String imagesBack = 'assets/images/back.jpg';
   static const String imagesGeneralDynamicsSymbol = 'assets/images/General-Dynamics-Symbol.png';
+  static const String imagesGithubLogo = 'assets/images/github-logo.png';
   static const String imagesGog = 'assets/images/gog.png';
   static const String imagesIntelIcon = 'assets/images/Intel_icon.png';
   static const String imagesKarina = 'assets/images/Karina.png';
@@ -13,5 +16,8 @@ class Assets {
   static const String imagesNingning = 'assets/images/Ningning.png';
   static const String imagesWa = 'assets/images/wa.png';
   static const String imagesWinter = 'assets/images/Winter.png';
-  static const String imagesgithub_logo = 'assets/images/github-logo.png';
+  static const String videosIntro = 'assets/videos/Intro.mp4';
+  static const String videosIntro2 = 'assets/videos/Intro2.mp4';
+  static const String videosIntro3 = 'assets/videos/intro3.mp4';
+
 }

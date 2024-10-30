@@ -1,17 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-// Import the encryption package
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:FFinance/Services/Encrypt/aes_helper.dart'; // Import the Aes256Helper class
 
 class TwelveDataService {
   late final AesKeys keys;  // Use late keyword for keys
   late final String encryptedApiKey; // Encrypted API Key
 
-  final String rawApiKey = 'e30b20fbd4514ec6856399cbdb4c8838';
-
   TwelveDataService() {
-    // Initialize keys and encryptedApiKey in the constructor
+    // Initialize keys and encrypt the API key from the .env file
     keys = Aes256Helper.generateRandomKeyAndIV();
+    final rawApiKey = dotenv.env['API_KEY'] ?? ''; // Get API key from .env
     encryptedApiKey = Aes256Helper.encrypt(rawApiKey, keys);
   }
 

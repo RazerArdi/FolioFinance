@@ -1,17 +1,17 @@
 import 'dart:convert';
 import 'package:FFinance/Services/Encrypt/aes_helper.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:FFinance/Models/NewsArticle.dart';
 
 class NewsService {
   late final AesKeys keys;  // Use late keyword
   late final String encryptedApiKey; // Use late keyword
 
-  final String rawApiKey = 'fac6927930f3406792166f827bd3085c';
-
   NewsService() {
-    // Initialize keys and encryptedApiKey inside the constructor
+    // Initialize keys and encrypt the API key from the .env file
     keys = Aes256Helper.generateRandomKeyAndIV();
+    final rawApiKey = dotenv.env['NEWS_API_KEY'] ?? ''; // Get API key from .env
     encryptedApiKey = Aes256Helper.encrypt(rawApiKey, keys);
   }
 
