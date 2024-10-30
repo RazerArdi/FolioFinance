@@ -1,3 +1,4 @@
+import 'package:FFinance/View/Register.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -53,6 +54,7 @@ class AuthController extends GetxController {
       } else {
         print('Error: $e');
         Get.snackbar('Login Error', 'An unknown error occurred.');
+        Get.to(DaftarPage());
       }
     } catch (e) {
       print('Error: $e');
