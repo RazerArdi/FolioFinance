@@ -11,7 +11,7 @@ class NewsService {
   NewsService() {
     // Initialize keys and encrypt the API key from the .env file
     keys = Aes256Helper.generateRandomKeyAndIV();
-    final rawApiKey = dotenv.env['NEWS_API_KEY'] ?? ''; // Get API key from .env
+    final rawApiKey = dotenv.env['NEWS_API_KEY'] ?? '';  // Get API key from .env
     encryptedApiKey = Aes256Helper.encrypt(rawApiKey, keys);
   }
 
