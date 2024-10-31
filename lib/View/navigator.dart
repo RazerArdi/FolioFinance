@@ -89,7 +89,7 @@ class BottomNavigator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final MainController controller = Get.find(); // Move this line here
+    final MainController controller = Get.find();
 
     return Obx(() => BottomNavigationBar(
       currentIndex: controller.selectedIndex.value,
@@ -106,6 +106,7 @@ class BottomNavigator extends StatelessWidget {
         BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Community'),
         BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Explore'),
         BottomNavigationBarItem(icon: Icon(Icons.policy_rounded), label: 'Porto'),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
       ],
     ));
   }
