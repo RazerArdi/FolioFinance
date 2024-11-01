@@ -7,6 +7,7 @@ import 'package:FFinance/View/Community.dart';
 import 'package:FFinance/View/Explore.dart';
 import 'package:FFinance/View/Market.dart';
 import 'package:FFinance/View/halaman_utama.dart';
+import 'package:FFinance/View/Profil.dart';
 
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
@@ -26,6 +27,7 @@ class MainPage extends StatelessWidget {
             const Community(),
             const Explore(),
             const Porto(),
+            Profil(),
           ],
         );
       }),
