@@ -61,6 +61,7 @@ class ProfileController extends GetxController {
 
 
   // Add a post to Firestore with text content and optional media
+  // Add a post to Firestore with text content and optional media
   Future<void> addPost(String content, [String? postId]) async {
     try {
       Position? location;
@@ -69,11 +70,15 @@ class ProfileController extends GetxController {
       }
 
       // Upload media first if necessary
+      String contentType = 'image'; // Default to 'image'
       if (postMediaFile.value != null) {
         await uploadPostMedia();  // Ensure media is uploaded and URL is set
         if (postMediaUrl.value.isEmpty) {
           await Future.delayed(Duration(seconds: 2));  // Wait for URL to be available
         }
+
+        // Determine the content type (image or video)
+        contentType = postMediaUrl.value.endsWith('.mp4') ? 'video' : 'image';
       }
 
       final postData = {
@@ -85,6 +90,7 @@ class ProfileController extends GetxController {
         'location': location != null
             ? {'lat': location.latitude, 'long': location.longitude}
             : null,
+        'contentType': contentType,  // Add contentType to indicate whether it's a video or an image
       };
 
       if (postId == null) {

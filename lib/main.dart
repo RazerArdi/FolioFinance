@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'Routes/app_routes.dart';
@@ -12,6 +13,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 void main() async {
   await dotenv.load(fileName: "assets/.env");
   WidgetsFlutterBinding.ensureInitialized();
+  FirebaseAppCheck appCheck = FirebaseAppCheck.instance;
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

@@ -176,6 +176,7 @@ class Profil extends StatelessWidget {
             final data = doc.data() as Map<String, dynamic>?;
             final username = data != null && data.containsKey('username') ? data['username'] : 'Anonymous';
             final mediaUrl = data != null && data.containsKey('mediaUrl') ? data['mediaUrl'] : '';
+            final contentType = data != null && data.containsKey('contentType') ? data['contentType'] : 'image'; // Default to 'image'
 
             return Card(
               margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
@@ -206,9 +207,9 @@ class Profil extends StatelessWidget {
                   if (mediaUrl != null && mediaUrl.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: mediaUrl.endsWith('.mp4')
-                          ? VideoPlayerWidget(videoUrl: mediaUrl)
-                          : Image.network(mediaUrl, fit: BoxFit.cover),
+                      child: contentType == 'video'
+                          ? VideoPlayerWidget(videoUrl: mediaUrl)  // Use VideoPlayerWidget for video
+                          : Image.network(mediaUrl, fit: BoxFit.cover),  // Display image otherwise
                     ),
                 ],
               ),

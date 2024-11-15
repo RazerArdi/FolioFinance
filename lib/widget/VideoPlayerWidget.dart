@@ -1,7 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_video_view/flutter_video_view.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:video_player/video_player.dart';
 
-// VideoPlayerWidget using flutter_video_view
+class MediaListWidget extends StatelessWidget {
+  final String mediaUrl;
+  final bool isVideo;
+
+  const MediaListWidget({required this.mediaUrl, required this.isVideo});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: isVideo
+                ? VideoPlayerWidget(videoUrl: mediaUrl) // Use VideoPlayerWidget for videos
+                : CachedNetworkImage(
+              imageUrl: mediaUrl, // Use CachedNetworkImage for images
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+              errorWidget: (context, url, error) => Center(child: Icon(Icons.error)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class VideoPlayerWidget extends StatefulWidget {
   final String videoUrl;
 
@@ -13,103 +43,38 @@ class VideoPlayerWidget extends StatefulWidget {
 
 class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   late VideoPlayerController _controller;
+  late Future<void> _initializeVideoPlayerFuture;
 
   @override
   void initState() {
     super.initState();
     _controller = VideoPlayerController.network(widget.videoUrl);
-    _controller.initialize().then((_) {
-      setState(() {}); // Rebuild widget when video is initialized
-      _controller.play(); // Automatically start playing the video
-    });
+    _initializeVideoPlayerFuture = _controller.initialize();
   }
 
   @override
   Widget build(BuildContext context) {
-    return _controller.value.isInitialized
-        ? AspectRatio(
-      aspectRatio: _controller.value.aspectRatio,
-      child: VideoPlayer(_controller),
-    )
-        : Center(child: CircularProgressIndicator());
+    return FutureBuilder<void>(
+      future: _initializeVideoPlayerFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Icon(Icons.error));
+        } else {
+          return AspectRatio(
+            aspectRatio: _controller.value.aspectRatio,
+            child: VideoPlayer(_controller),
+          );
+        }
+      },
+    );
   }
 
   @override
   void dispose() {
-    _controller.dispose();
     super.dispose();
+    _controller.dispose();
   }
 }
 
-// MediaListWidget to handle displaying multiple media items
-class MediaListWidget extends StatelessWidget {
-  // Example: Replace with actual async data-fetching method
-  Future<List<Map<String, String>>> fetchMediaData() async {
-    await Future.delayed(Duration(seconds: 2));
-
-    // Example of media data that includes both image and video URLs
-    return [
-      {'mediaUrl': 'https://www.example.com/video.mp4'},
-      {'mediaUrl': 'https://www.example.com/image.jpg'},
-      {'mediaUrl': 'https://www.example.com/another_image.png'},
-      {'mediaUrl': 'https://www.example.com/another_video.mp4'}
-    ];
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<List<Map<String, String>>>(
-      future: fetchMediaData(),
-      builder: (context, snapshot) {
-        // Handle loading state
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-
-        // Handle error state
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
-
-        // Handle empty or null data
-        if (!snapshot.hasData || snapshot.data == null || snapshot.data!.isEmpty) {
-          return Center(child: Text('No data available'));
-        }
-
-        // Retrieve the media list
-        final mediaList = snapshot.data!;
-
-        return ListView.builder(
-          itemCount: mediaList.length,
-          itemBuilder: (context, index) {
-            final mediaUrl = mediaList[index]['mediaUrl'];
-
-            if (mediaUrl == null || mediaUrl.isEmpty) {
-              return SizedBox.shrink(); // Skip empty or null URLs
-            }
-
-            bool isVideo = mediaUrl.endsWith('.mp4') || mediaUrl.endsWith('.mov');
-            bool isImage = mediaUrl.endsWith('.jpg') || mediaUrl.endsWith('.jpeg') || mediaUrl.endsWith('.png');
-
-            return Card(
-              margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: isVideo
-                        ? VideoPlayerWidget(videoUrl: mediaUrl) // Handle video
-                        : isImage
-                        ? Image.network(mediaUrl, fit: BoxFit.cover) // Handle image
-                        : Center(child: Text('Unsupported media type')),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-}
