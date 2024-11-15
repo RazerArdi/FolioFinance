@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
+import 'package:flutter_video_view/flutter_video_view.dart';
 
-// Video Player Widget
+// VideoPlayerWidget using flutter_video_view
 class VideoPlayerWidget extends StatefulWidget {
   final String videoUrl;
 
@@ -17,11 +17,11 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.network(widget.videoUrl)
-      ..initialize().then((_) {
-        setState(() {});
-        _controller.play(); // Automatically play the video
-      });
+    _controller = VideoPlayerController.network(widget.videoUrl);
+    _controller.initialize().then((_) {
+      setState(() {}); // Rebuild widget when video is initialized
+      _controller.play(); // Automatically start playing the video
+    });
   }
 
   @override
@@ -36,8 +36,8 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
   @override
   void dispose() {
-    super.dispose();
     _controller.dispose();
+    super.dispose();
   }
 }
 
@@ -96,13 +96,12 @@ class MediaListWidget extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Handle media based on URL type
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: isVideo
-                        ? VideoPlayerWidget(videoUrl: mediaUrl)
+                        ? VideoPlayerWidget(videoUrl: mediaUrl) // Handle video
                         : isImage
-                        ? Image.network(mediaUrl, fit: BoxFit.cover)
+                        ? Image.network(mediaUrl, fit: BoxFit.cover) // Handle image
                         : Center(child: Text('Unsupported media type')),
                   ),
                 ],

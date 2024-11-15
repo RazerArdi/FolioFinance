@@ -172,12 +172,9 @@ class Profil extends StatelessWidget {
             final doc = snapshot.data!.docs[index];
             final content = doc['content'] ?? '';
             final timestamp = (doc['timestamp'] as Timestamp).toDate();
-
-            // Safely access the 'username' field
+            final postId = doc.id;  // Get the post ID
             final data = doc.data() as Map<String, dynamic>?;
             final username = data != null && data.containsKey('username') ? data['username'] : 'Anonymous';
-
-            // Safely access the mediaUrl
             final mediaUrl = data != null && data.containsKey('mediaUrl') ? data['mediaUrl'] : '';
 
             return Card(
@@ -187,15 +184,31 @@ class Profil extends StatelessWidget {
                 children: [
                   ListTile(
                     title: Text(content),
-                    subtitle: Text(
-                        '$username - ${timestamp.day}/${timestamp.month}/${timestamp.year} ${timestamp.hour}:${timestamp.minute}'),
+                    subtitle: Text('$username - ${timestamp.day}/${timestamp.month}/${timestamp.year} ${timestamp.hour}:${timestamp.minute}'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.edit),
+                          onPressed: () {
+                            _showEditPostDialog(context, postId, content);
+                          },
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () {
+                            _showDeleteConfirmationDialog(context, postId);
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                  if (mediaUrl != null && mediaUrl.isNotEmpty) // Check if media exists and display it
+                  if (mediaUrl != null && mediaUrl.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: mediaUrl.endsWith('.mp4') // Check if media is a video
-                          ? VideoPlayerWidget(videoUrl: mediaUrl) // Display video
-                          : Image.network(mediaUrl, fit: BoxFit.cover), // Display image
+                      child: mediaUrl.endsWith('.mp4')
+                          ? VideoPlayerWidget(videoUrl: mediaUrl)
+                          : Image.network(mediaUrl, fit: BoxFit.cover),
                     ),
                 ],
               ),
@@ -287,6 +300,64 @@ class Profil extends StatelessWidget {
                 }
               },
               child: const Text('Post'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDeleteConfirmationDialog(BuildContext context, String postId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete Post'),
+          content: const Text('Are you sure you want to delete this post?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await controller.deletePost(postId); // Delete the post
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showEditPostDialog(BuildContext context, String postId, String currentContent) {
+    final TextEditingController editController = TextEditingController(text: currentContent);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Post'),
+          content: TextField(
+            controller: editController,
+            decoration: const InputDecoration(hintText: 'Edit your post'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final newContent = editController.text.trim();
+                if (newContent.isNotEmpty) {
+                  await controller.addPost(newContent, postId); // Update the post
+                  Navigator.of(context).pop(); // Close the dialog
+                }
+              },
+              child: const Text('Save'),
             ),
           ],
         );

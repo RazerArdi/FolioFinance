@@ -71,29 +71,27 @@ class ProfileController extends GetxController {
       // Upload media first if necessary
       if (postMediaFile.value != null) {
         await uploadPostMedia();  // Ensure media is uploaded and URL is set
-        // Wait until the URL is set
         if (postMediaUrl.value.isEmpty) {
-          print("Media URL is empty, waiting for URL...");
-          await Future.delayed(Duration(seconds: 2));  // Wait for 2 seconds (if necessary)
+          await Future.delayed(Duration(seconds: 2));  // Wait for URL to be available
         }
       }
 
-      // Prepare post data
       final postData = {
         'content': content,
         'timestamp': Timestamp.now(),
-        'userId': _auth.currentUser?.uid ?? '', // Ensure using user ID
-        'profileImage': profileImageUrl.value, // Using user's profile image
-        'mediaUrl': postMediaUrl.value.isEmpty ? null : postMediaUrl.value, // Media URL (image/video)
+        'userId': _auth.currentUser?.uid ?? '',
+        'profileImage': profileImageUrl.value,
+        'mediaUrl': postMediaUrl.value.isEmpty ? null : postMediaUrl.value,
         'location': location != null
             ? {'lat': location.latitude, 'long': location.longitude}
             : null,
       };
 
-      // Add the post
       if (postId == null) {
+        // Add new post
         await _firestore.collection('posts').add(postData);
       } else {
+        // Update existing post
         await _firestore.collection('posts').doc(postId).update(postData);
       }
 
@@ -105,7 +103,6 @@ class ProfileController extends GetxController {
       print('Error creating/updating post: $e');
     }
   }
-
 
 
   Future<void> uploadPostMedia() async {
@@ -179,6 +176,7 @@ class ProfileController extends GetxController {
     );
   }
 
+
   // Pick an image from the camera
   Future<void> _pickImageFromCamera() async {
     if (await Permission.camera.isGranted) {
@@ -205,24 +203,35 @@ class ProfileController extends GetxController {
     }
   }
 
-  // Pick image or video from the gallery
   Future<void> _pickImageOrVideoFromGallery() async {
-    if (await Permission.photos.isGranted) {
+    // Memastikan izin akses galeri diberikan
+    PermissionStatus permission = await Permission.photos.status;
+
+    if (permission != PermissionStatus.granted) {
+      // Meminta izin jika belum diberikan
+      permission = await Permission.photos.request();
+    }
+
+    if (permission.isGranted) {
+      // Jika izin diberikan, pilih gambar atau video
       final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
       if (pickedFile != null) {
-        postMediaFile.value = File(pickedFile.path);  // Save image file for post
-        await uploadPostMedia();  // Upload the selected media
+        postMediaFile.value = File(pickedFile.path);
+        await uploadPostMedia();  // Upload media
       } else {
         final XFile? videoFile = await _picker.pickVideo(source: ImageSource.gallery);
         if (videoFile != null) {
-          postMediaFile.value = File(videoFile.path);  // Save video file for post
-          await uploadPostMedia();  // Upload the selected media
+          postMediaFile.value = File(videoFile.path);
+          await uploadPostMedia();  // Upload video
         }
       }
     } else {
+      // Tampilkan pesan jika izin ditolak
       print('Gallery permission denied');
     }
   }
+
+
 
   Future<void> uploadProfileImage() async {
     if (profileImage.value == null) return;
@@ -280,4 +289,5 @@ class ProfileController extends GetxController {
       'username': username,
     }, SetOptions(merge: true));
   }
+
 }
