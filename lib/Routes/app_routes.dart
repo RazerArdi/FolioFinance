@@ -9,6 +9,7 @@ import 'package:FFinance/View/Market.dart';
 import 'package:FFinance/View/FirstLogORRegister.dart';
 import 'package:FFinance/View/OTPScreen.dart';
 import 'package:FFinance/View/Register.dart';
+import 'package:FFinance/View/Music.dart';
 
 class AppRoutes {
   static const String splashScreen = '/splash';
@@ -18,14 +19,15 @@ class AppRoutes {
   static const String explore = '/explore';
   static const String porto = '/Porto';
   static const String profil = '/Profile';
+  static const String music = '/Musicpage';
   static const String register = '/register';
   static const String otp = '/otp';
   static const String FirstLogORRegisterROUTE = '/FirstLogORRegister';
 
-
   static final routes = [
     GetPage(name: splashScreen, page: () => const AnimatedSplashScreenPage()),
-    GetPage(name: FirstLogORRegisterROUTE, page: () => const FirstLogORRegister()),
+    GetPage(
+        name: FirstLogORRegisterROUTE, page: () => const FirstLogORRegister()),
     GetPage(name: register, page: () => DaftarPage()),
     GetPage(name: home, page: () => const MainPage()),
     GetPage(name: market, page: () => const Market()),
@@ -33,7 +35,7 @@ class AppRoutes {
     GetPage(name: explore, page: () => const Explore()),
     GetPage(name: porto, page: () => const Porto()),
     GetPage(name: profil, page: () => Profil()),
+    GetPage(name: music, page: () => MusicPage()),
     GetPage(name: otp, page: () => OTPScreen()),
-
   ];
 }

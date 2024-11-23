@@ -8,7 +8,7 @@ class TopNavigator extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final MainController controller = Get.find(); // Move this line here
+    final MainController controller = Get.find();
 
     return AppBar(
       title: const Text('Folio Finance'),
@@ -94,19 +94,20 @@ class BottomNavigator extends StatelessWidget {
     return Obx(() => BottomNavigationBar(
       currentIndex: controller.selectedIndex.value,
       onTap: (index) {
-        controller.onTabChanged(index); // Update the selected index
+        controller.onTabChanged(index);
       },
       type: BottomNavigationBarType.fixed,
       selectedItemColor: const Color(0xFF6750A4),
       unselectedItemColor: Colors.grey,
       showUnselectedLabels: true,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.money), label: 'Watchlist'),
-        BottomNavigationBarItem(icon: Icon(Icons.public), label: 'Markets'),
-        BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Community'),
-        BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Explore'),
-        BottomNavigationBarItem(icon: Icon(Icons.policy_rounded), label: 'Porto'),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
+      items: [
+        const BottomNavigationBarItem(icon: Icon(Icons.money), label: 'Watchlist'),
+        const BottomNavigationBarItem(icon: Icon(Icons.public), label: 'Markets'),
+        const BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Community'),
+        const BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Explore'),
+        const BottomNavigationBarItem(icon: Icon(Icons.policy_rounded), label: 'Porto'),
+        const BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
+        BottomNavigationBarItem(icon: Icon(Icons.music_note), label: 'Music') // Perbaikan di sini
       ],
     ));
   }
