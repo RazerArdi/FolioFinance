@@ -2,10 +2,17 @@
 class Assets {
   Assets._();
 
+  static const String assets = 'assets/.env';
+  static const String assetsAudioMusic1 = 'assets/audio/music1.mp3';
   static const String assetsIconIcLauncher = 'assets/icon/ic_launcher.png';
+  static const String assetsImagesEve = 'assets/images/eve.jpg';
+  static const String assetsImagesKarina = 'assets/images/Karina.png';
+  static const String assetsNASDAQCompanies = 'assets/NASDAQ_companies.csv';
   static const String assetsVideosIntro = 'assets/videos/Intro.webm';
+  static const String audioMusic1 = 'assets/audio/music1.mp3';
   static const String iconIcLauncher = 'assets/icon/ic_launcher.png';
   static const String imagesBack = 'assets/images/back.jpg';
+  static const String imagesEve = 'assets/images/eve.jpg';
   static const String imagesGeneralDynamicsSymbol = 'assets/images/General-Dynamics-Symbol.png';
   static const String imagesGithubLogo = 'assets/images/github-logo.png';
   static const String imagesGog = 'assets/images/gog.png';

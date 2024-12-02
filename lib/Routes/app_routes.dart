@@ -32,7 +32,7 @@ class AppRoutes {
     GetPage(name: home, page: () => const MainPage()),
     GetPage(name: market, page: () => const Market()),
     GetPage(name: community, page: () => const Community()),
-    GetPage(name: explore, page: () => const Explore()),
+    GetPage(name: explore, page: () => Explore()),
     GetPage(name: porto, page: () => const Porto()),
     GetPage(name: profil, page: () => Profil()),
     GetPage(name: music, page: () => MusicPage()),

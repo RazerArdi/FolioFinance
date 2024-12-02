@@ -26,7 +26,7 @@ class MainPage extends StatelessWidget {
             HalamanUtama(),
             const Market(),
             const Community(),
-            const Explore(),
+            Explore(),
             const Porto(),
             Profil(),
             MusicPage(),
