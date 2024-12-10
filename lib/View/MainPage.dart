@@ -15,7 +15,7 @@ class MainPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final MainController controller = Get.put(MainController()); // Move this line here
+    final MainController controller = Get.put(MainController());
 
     return Scaffold(
       appBar: const TopNavigator(),

@@ -1,4 +1,3 @@
-// Keep the existing Company class
 class Company {
   final String symbol;
   final String name;

@@ -1,4 +1,5 @@
 import 'package:FFinance/Controllers/company_controller.dart';
+import 'package:FFinance/Models/company.dart'; // Adjust the path if necessary
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
@@ -15,8 +16,8 @@ class Explore extends StatefulWidget {
 
 class _ExploreState extends State<Explore> {
   final CompanyController companyController = Get.put(CompanyController());
-  final TextEditingController _searchController = TextEditingController();
-  final MapController _mapController = MapController();
+  final TextEditingController searchController = TextEditingController();
+  late final MapController _mapController;
   LatLng? initialCenter;
   LatLng? userLocation;
   bool isLoadingLocation = true;
@@ -24,6 +25,8 @@ class _ExploreState extends State<Explore> {
   @override
   void initState() {
     super.initState();
+    _mapController = MapController();
+    Get.put(_mapController);
     _getCurrentLocation();
   }
 
@@ -34,15 +37,18 @@ class _ExploreState extends State<Explore> {
         permission = await Geolocator.requestPermission();
       }
 
-      if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
-        Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      if (permission == LocationPermission.whileInUse ||
+          permission == LocationPermission.always) {
+        Position position = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high);
         setState(() {
           initialCenter = LatLng(position.latitude, position.longitude);
           userLocation = LatLng(position.latitude, position.longitude);
           isLoadingLocation = false;
         });
       } else {
-        Get.snackbar('Permission Denied', 'Location permission is required to show your location on the map.');
+        Get.snackbar('Permission Denied',
+            'Location permission is required to show your location on the map.');
         setState(() {
           isLoadingLocation = false;
         });
@@ -74,7 +80,8 @@ class _ExploreState extends State<Explore> {
     if (userLocation != null) {
       _mapController.move(userLocation!, 10.0);
     } else {
-      Get.snackbar('Location Unavailable', 'Unable to find your current location');
+      Get.snackbar('Location Unavailable',
+          'Unable to find your current location');
     }
   }
 
@@ -99,27 +106,58 @@ class _ExploreState extends State<Explore> {
           ),
         ],
       ),
-      body: Column(
+      body: Column( // Ubah Stack menjadi Column
         children: [
+          // Search bar dengan autocomplete
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _searchController,
-              onChanged: (query) {
-                companyController.filterCompanies(query);
+            child: Autocomplete<Company>(
+              optionsBuilder: (TextEditingValue textEditingValue) {
+                if (textEditingValue.text == '') {
+                  return const Iterable<Company>.empty();
+                }
+                return companyController.companies.where((Company option) {
+                  return option.name
+                      .toLowerCase()
+                      .contains(textEditingValue.text.toLowerCase()) ||
+                      option.symbol
+                          .toLowerCase()
+                          .contains(textEditingValue.text.toLowerCase());
+                });
               },
-              decoration: InputDecoration(
-                hintText: 'Search companies...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-              ),
+              displayStringForOption: (Company option) => option.name,
+              fieldViewBuilder: (
+                  BuildContext context,
+                  TextEditingController fieldTextEditingController,
+                  FocusNode fieldFocusNode,
+                  VoidCallback onFieldSubmitted) {
+                return TextField(
+                  controller: fieldTextEditingController,
+                  focusNode: fieldFocusNode,
+                  decoration: InputDecoration(
+                    hintText: 'Search companies by name or symbol...',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        fieldTextEditingController.clear();
+                        companyController.filterCompanies('');
+                      },
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                );
+              },
+              onSelected: (Company selection) {
+                companyController.goToCompanyLocation(selection);
+              },
             ),
           ),
-          Expanded(
+          Expanded( // Bungkus FlutterMap dengan Expanded
             child: Obx(() {
               final filteredCompanies = companyController.filteredCompanies;
 
@@ -139,25 +177,27 @@ class _ExploreState extends State<Explore> {
                     "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                     subdomains: ['a', 'b', 'c'],
                   ),
-                  // Company Markers
                   MarkerLayer(
                     markers: filteredCompanies.map((company) {
                       return Marker(
                         width: 40.0,
                         height: 40.0,
                         point: LatLng(company.latitude, company.longitude),
-                        child: GestureDetector(
-                          onTap: () => companyController.selectCompany(company),
-                          child: const Icon(
-                            Icons.location_on,
-                            size: 40,
-                            color: Colors.red,
+                        child: Tooltip(
+                          message: '${company.name} (${company.symbol})',
+                          child: GestureDetector(
+                            onTap: () =>
+                                companyController.selectCompany(company),
+                            child: const Icon(
+                              Icons.location_on,
+                              size: 40,
+                              color: Colors.red,
+                            ),
                           ),
                         ),
                       );
                     }).toList(),
                   ),
-                  // User Location Marker
                   if (userLocation != null)
                     MarkerLayer(
                       markers: [
@@ -167,7 +207,6 @@ class _ExploreState extends State<Explore> {
                           point: userLocation!,
                           child: GestureDetector(
                             onTap: () {
-                              // Show user location details
                               showDialog(
                                 context: context,
                                 builder: (BuildContext context) {
@@ -175,18 +214,23 @@ class _ExploreState extends State<Explore> {
                                     title: const Text('My Location'),
                                     content: Column(
                                       mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment.start,
                                       children: [
-                                        Text('Latitude: ${userLocation!.latitude}'),
-                                        Text('Longitude: ${userLocation!.longitude}'),
+                                        Text(
+                                            'Latitude: ${userLocation!.latitude}'),
+                                        Text(
+                                            'Longitude: ${userLocation!.longitude}'),
                                         const SizedBox(height: 10),
                                         GestureDetector(
-                                          onTap: () => _launchGoogleMaps(userLocation!),
+                                          onTap: () =>
+                                              _launchGoogleMaps(userLocation!),
                                           child: Text(
                                             'Open in Google Maps',
                                             style: TextStyle(
                                               color: Colors.blue,
-                                              decoration: TextDecoration.underline,
+                                              decoration:
+                                              TextDecoration.underline,
                                             ),
                                           ),
                                         ),
@@ -194,7 +238,8 @@ class _ExploreState extends State<Explore> {
                                     ),
                                     actions: [
                                       TextButton(
-                                        onPressed: () => Navigator.of(context).pop(),
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(),
                                         child: const Text('Close'),
                                       ),
                                     ],
@@ -215,6 +260,7 @@ class _ExploreState extends State<Explore> {
               );
             }),
           ),
+          // Tampilkan info map di bawah
           Obx(() {
             final selectedCompany = companyController.selectedCompany.value;
             if (selectedCompany != null) {
@@ -240,17 +286,38 @@ class _ExploreState extends State<Explore> {
                     const SizedBox(height: 8),
                     ElevatedButton(
                       onPressed: () {
-                        Get.snackbar('Navigation',
-                            'Navigating to ${selectedCompany.name} location');
+                        _mapController.move(
+                          LatLng(
+                            selectedCompany.latitude,
+                            selectedCompany.longitude,
+                          ),
+                          12.0,
+                        );
                       },
-                      child: const Text('Navigate'),
-                    )
+                      child: const Text('Center on Company'),
+                    ),
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: () => _launchGoogleMaps(
+                        LatLng(
+                          selectedCompany.latitude,
+                          selectedCompany.longitude,
+                        ),
+                      ),
+                      child: Text(
+                        'Open in Google Maps',
+                        style: TextStyle(
+                          color: Colors.blue,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               );
             }
             return const SizedBox.shrink();
-          })
+          }),
         ],
       ),
     );
