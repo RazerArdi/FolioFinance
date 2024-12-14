@@ -1,7 +1,9 @@
+import 'package:FFinance/Controllers/ConnectivityController.dart';
 import 'package:FFinance/Controllers/main_controller.dart';
-import 'package:FFinance/Controllers/StockController.dart'; // Import StockController
+import 'package:FFinance/Controllers/StockController.dart';
 import 'package:FFinance/Models/stock_data.dart';
 import 'package:FFinance/Services/logo_service.dart';
+import 'package:FFinance/View/AsynchronousComputingHome/AsynchronousComputingHome.dart';
 import 'package:FFinance/View/webview_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -14,28 +16,54 @@ import 'package:intl/intl.dart';
 class HalamanUtama extends StatelessWidget {
   final MainController controller = Get.put(MainController());
   final StockController stockController = Get.put(StockController());
-  final NewsService newsService = NewsService();
+  final ConnectivityController connectivityController = Get.put(ConnectivityController());
   final LogoService stockService = LogoService();
   final RxList<NewsArticle> newsArticles = <NewsArticle>[].obs;
 
-  HalamanUtama({super.key}) {
-    _fetchFinanceNews();
-    stockController.fetchStockData("AAPL,MSFT,GOOGL");
+  HalamanUtama({Key? key}) : super(key: key) {
+    _initializeData();
+  }
+
+  void _initializeData() {
+    if (connectivityController.isConnected.value) {
+      _fetchFinanceNews();
+      stockController.fetchStockData("AAPL,MSFT,GOOGL");
+    }
   }
 
   void _fetchFinanceNews() async {
     try {
-      final articles = await newsService.fetchFinanceNews();
+      final articles = await NewsService().fetchFinanceNews();
       newsArticles.assignAll(articles);
     } catch (e) {
       print('Error fetching finance news: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to fetch news',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
+      body: Obx(() {
+        if (!connectivityController.isConnected.value) {
+          return AsynchronousComputingHome(); // Use AsynchronousComputingHome to handle no connection view
+        }
+        return _buildMainContent();
+      }),
+    );
+  }
+
+  Widget _buildMainContent() {
+    return RefreshIndicator(
+      onRefresh: () async {
+        _initializeData();
+      },
+      child: Stack(
         children: [
           ListView(
             padding: const EdgeInsets.all(16.0),
@@ -62,7 +90,7 @@ class HalamanUtama extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              _buildBreakingNewsCarousel(context),
+              _buildBreakingNewsCarousel(),
               const SizedBox(height: 16),
               _buildCashbackBanner(),
               const SizedBox(height: 16),
@@ -84,6 +112,24 @@ class HalamanUtama extends StatelessWidget {
               child: const Icon(Icons.add),
             ),
           ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Obx(() =>
+            connectivityController.isConnected.value
+                ? Container()
+                : Container(
+              color: Colors.red,
+              padding: const EdgeInsets.all(8),
+              child: const Text(
+                'No Internet Connection',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white),
+              ),
+            )
+            ),
+          ),
         ],
       ),
     );
@@ -103,7 +149,7 @@ class HalamanUtama extends StatelessWidget {
     );
   }
 
-  Widget _buildBreakingNewsCarousel(BuildContext context) {
+  Widget _buildBreakingNewsCarousel() {
     return SizedBox(
       height: 200,
       child: Obx(() {
@@ -112,10 +158,10 @@ class HalamanUtama extends StatelessWidget {
         } else {
           return CardSwiper(
             cardsCount: newsArticles.length,
-            cardBuilder: (context, index, realIndex, direction) {
+            cardBuilder: (BuildContext context, index, realIndex, direction) {
               final article = newsArticles[index];
               return GestureDetector(
-                onTap: () => Get.to(WebViewScreen(url: article.url)), // Navigate directly to WebView
+                onTap: () => Get.to(WebViewScreen(url: article.url)),
                 child: Hero(
                   tag: article.title,
                   child: Card(
