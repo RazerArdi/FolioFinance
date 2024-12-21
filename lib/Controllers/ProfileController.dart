@@ -64,7 +64,7 @@ class ProfileController extends GetxController {
       if (currentUser != null) {
         final userId = currentUser.uid;
         final dateTime = DateTime.now(); // Objek DateTime
-        final timestamp = Timestamp.fromDate(dateTime);   
+        final timestamp = Timestamp.fromDate(dateTime);
 
         final newPostRef = await FirebaseFirestore.instance.collection('posts').add({
           'userId': userId,

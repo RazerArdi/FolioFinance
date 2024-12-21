@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:FFinance/Controllers/ConnectivityController.dart';
+import 'AsynchronousComputingHome/AsynchronousComputingHome.dart';
 
 class Market extends StatelessWidget {
   final Map<String, dynamic>? marketData;
@@ -7,18 +10,25 @@ class Market extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ConnectivityController connectivityController = Get.put(ConnectivityController());
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildIHSGSection(),
-            _buildDetailsSection(),
-            _buildTrendingSection(),
-            _buildMoversSection(),
-          ],
-        ),
-      ),
+      body: Obx(() {
+        // Redirect ke halaman no internet jika tidak terhubung
+        if (!connectivityController.isConnected.value) {
+          return AsynchronousComputingHome();
+        }
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildIHSGSection(),
+              _buildDetailsSection(),
+              _buildTrendingSection(),
+              _buildMoversSection(),
+            ],
+          ),
+        );
+      }),
     );
   }
 
@@ -51,8 +61,7 @@ class Market extends StatelessWidget {
             height: 200,
             color: Colors.grey[300],
             child: const Center(
-              child: Text(
-                  'IHSG Chart Placeholder'), // Bisa diganti dengan widget Chart
+              child: Text('IHSG Chart Placeholder'), // Bisa diganti dengan widget Chart
             ),
           ),
         ],
@@ -124,17 +133,14 @@ class Market extends StatelessWidget {
     );
   }
 
-  List<Map<String, dynamic>> getTrendingStocks(
-      Map<String, dynamic> marketData) {
+  List<Map<String, dynamic>> getTrendingStocks(Map<String, dynamic> marketData) {
     // Pastikan key sesuai dengan data yang dikembalikan dari API
-    if (marketData['popular_stocks'] != null &&
-        marketData['popular_stocks'] is List) {
+    if (marketData['popular_stocks'] != null && marketData['popular_stocks'] is List) {
       return List<Map<String, dynamic>>.from(marketData['popular_stocks']);
     } else {
       return [];
     }
   }
-
 
   // Bagian Trending Stocks
   Widget _buildTrendingSection() {
@@ -160,7 +166,6 @@ class Market extends StatelessWidget {
     );
   }
 
-
   // Fungsi untuk menampilkan list trending stocks
   Widget _buildTrendingStocks(List<Map<String, dynamic>> trendingStocks) {
     return Column(
@@ -177,7 +182,6 @@ class Market extends StatelessWidget {
       }).toList(),
     );
   }
-
 
   // Bagian Movers (Top Value, Top Volume, dll)
   Widget _buildMoversSection() {
@@ -209,19 +213,16 @@ class Market extends StatelessWidget {
       {'symbol': 'BMRI', 'value': '316.14B'},
     ];
 
-
     return Column(
       children: movers.map((mover) {
         return ListTile(
           leading: CircleAvatar(
             child: Text(mover['symbol'] != null && mover['symbol']!.isNotEmpty
                 ? mover['symbol']![0]
-                : '?'), // Tampilkan '?' jika data symbol kosong atau null
+                : '?'),
           ),
           title: Text(mover['symbol'] ?? 'Unknown Symbol'),
-          // Jika symbol null, tampilkan 'Unknown Symbol'
-          trailing: Text(mover['value'] ??
-              'No Data'), // Jika value null, tampilkan 'No Data'
+          trailing: Text(mover['value'] ?? 'No Data'),
         );
       }).toList(),
     );

@@ -20,7 +20,7 @@ class ConnectivityController extends GetxController {
   void _setupConnectivityListener() {
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
           (List<ConnectivityResult> results) {
-        print("Connectivity changed: $results"); // Tambahkan debug print
+        print("Connectivity changed: $results"); // debug print
         bool newConnectionStatus = results.contains(ConnectivityResult.wifi) ||
             results.contains(ConnectivityResult.mobile);
 
@@ -45,7 +45,7 @@ class ConnectivityController extends GetxController {
       isConnected.value = newConnectionStatus;
       _showConnectivitySnackbar(newConnectionStatus);
     } catch (e) {
-      print("Connectivity check error: $e"); // Tambahkan debug print
+      print("Connectivity check error: $e"); // debug print
       isConnected.value = false;
       _showConnectivitySnackbar(false);
     } finally {

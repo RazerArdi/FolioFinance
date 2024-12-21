@@ -1,11 +1,13 @@
 import 'package:FFinance/Controllers/company_controller.dart';
-import 'package:FFinance/Models/company.dart'; // Adjust the path if necessary
+import 'package:FFinance/Models/company.dart'; // Sesuaikan jalur jika diperlukan
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:FFinance/Controllers/ConnectivityController.dart'; // Tambahkan import
+import 'AsynchronousComputingHome/AsynchronousComputingHome.dart'; // Tambahkan import
 
 class Explore extends StatefulWidget {
   const Explore({Key? key}) : super(key: key);
@@ -16,6 +18,7 @@ class Explore extends StatefulWidget {
 
 class _ExploreState extends State<Explore> {
   final CompanyController companyController = Get.put(CompanyController());
+  final ConnectivityController connectivityController = Get.put(ConnectivityController()); // Tambahkan instance dari ConnectivityController
   final TextEditingController searchController = TextEditingController();
   late final MapController _mapController;
   LatLng? initialCenter;
@@ -87,6 +90,11 @@ class _ExploreState extends State<Explore> {
 
   @override
   Widget build(BuildContext context) {
+    // Jika tidak ada koneksi, tampilkan halaman No Internet
+    if (!connectivityController.isConnected.value) {
+      return AsynchronousComputingHome();
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Explore'),
@@ -106,9 +114,8 @@ class _ExploreState extends State<Explore> {
           ),
         ],
       ),
-      body: Column( // Ubah Stack menjadi Column
+      body: Column(
         children: [
-          // Search bar dengan autocomplete
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Autocomplete<Company>(
@@ -157,7 +164,7 @@ class _ExploreState extends State<Explore> {
               },
             ),
           ),
-          Expanded( // Bungkus FlutterMap dengan Expanded
+          Expanded(
             child: Obx(() {
               final filteredCompanies = companyController.filteredCompanies;
 
@@ -260,7 +267,6 @@ class _ExploreState extends State<Explore> {
               );
             }),
           ),
-          // Tampilkan info map di bawah
           Obx(() {
             final selectedCompany = companyController.selectedCompany.value;
             if (selectedCompany != null) {
