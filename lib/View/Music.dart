@@ -15,7 +15,7 @@ class MusicPage extends StatelessWidget {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: false, // Menghilangkan tombol kembali
         title: Text(
           'Now Playing',
           style: TextStyle(
@@ -24,10 +24,7 @@ class MusicPage extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+        centerTitle: true, // Menengahkan judul
       ),
       body: Obx(() {
         if (!connectivityController.isConnected.value) {

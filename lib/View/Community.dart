@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:FFinance/Controllers/CommunityController.dart';
+import 'package:FFinance/Models/CommunityModel.dart';
 
 class Community extends StatefulWidget {
   const Community({super.key});
@@ -9,43 +12,7 @@ class Community extends StatefulWidget {
 
 class _CommunityState extends State<Community> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  final List<Map<String, dynamic>> posts = [
-    {
-      'username': 'Karina',
-      'time': '10/12/24, 08:01 PM',
-      'content':
-          'I fell for a fudster post this morning (not like me because I have blocked hundreds) as I am a little emotional about the capital raise yesterday! If anyone sees what I posted back to him disregard, I have now blocked him!',
-      'likes': 68,
-      'comments': 6,
-      'shares': 4,
-      'sentiment': 'Bullish',
-      'photoUrl': 'assets/Images/Karina.png',
-    },
-    {
-      'username': 'Winter',
-      'time': '12:26 AM',
-      'content':
-          'Hey \$MLGO fam, I know a lot of you are getting uneasy with the weekend, so let’s reset and look at why this stock has massive potential and why we could be on the verge of a big breakout.',
-      'likes': 54,
-      'comments': 4,
-      'shares': 6,
-      'sentiment': 'Bullish',
-      'photoUrl': 'assets/Images/Winter.png',
-    },
-    {
-      'username': 'Ningning',
-      'time': '01:56 AM',
-      'content':
-          'I’m always amazed of how hyped telecom industry execs and experts are for SpaceMobile. Haven’t seen anything near to this level of respect and excitement for any other competitor. ASTS is on a whole other level!',
-      'likes': 56,
-      'comments': 2,
-      'shares': 5,
-      'sentiment': 'Bullish',
-      'photoUrl': 'assets/Images/Ningning.png',
-    },
-    // Add more posts here if needed
-  ];
+  final CommunityController communityController = Get.put(CommunityController());
 
   @override
   void initState() {
@@ -57,6 +24,11 @@ class _CommunityState extends State<Community> with SingleTickerProviderStateMix
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+
+  String getInitial(String username) {
+    return username.isNotEmpty ? username[0].toUpperCase() : '?';
   }
 
   @override
@@ -81,116 +53,248 @@ class _CommunityState extends State<Community> with SingleTickerProviderStateMix
           buildPostList(),
         ],
       ),
+      // Test button for creating a post
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _showNewPostDialog(context);
+        },
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  void _showNewPostDialog(BuildContext context) {
+    final TextEditingController contentController = TextEditingController();
+    String sentiment = 'Neutral';  // Default sentiment
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Create a New Post'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: contentController,
+                decoration: const InputDecoration(
+                  labelText: 'Post Content',
+                  hintText: 'Enter the content of your post',
+                ),
+                maxLines: 4,
+              ),
+              const SizedBox(height: 16),
+              DropdownButton<String>(
+                value: sentiment,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    sentiment = newValue!;
+                  });
+                },
+                items: <String>['Bullish', 'Neutral', 'Bearish']
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();  // Close the dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                String content = contentController.text.trim();
+                if (content.isNotEmpty) {
+                  communityController.uploadPost(content, sentiment);
+                  Navigator.of(context).pop();  // Close the dialog after posting
+                } else {
+                  // Show an error message if content is empty
+                  Get.snackbar('Error', 'Please enter content for the post');
+                }
+              },
+              child: const Text('Post'),
+            ),
+          ],
+        );
+      },
     );
   }
 
   Widget buildPostList() {
-    return ListView.builder(
-      itemCount: posts.length,
-      itemBuilder: (context, index) {
-        final post = posts[index];
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-          child: Card(
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+    return GetX<CommunityController>(
+      builder: (controller) {
+        if (controller.isLoading.value) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        if (controller.error.value.isNotEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Error: ${controller.error.value}'),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => controller.fetchPosts(),
+                  child: const Text('Retry'),
+                ),
+              ],
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          );
+        }
+
+        if (controller.posts.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text("No posts available."),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => controller.fetchPosts(),
+                  child: const Text('Refresh'),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: () => controller.fetchPosts(),
+          child: ListView.builder(
+            itemCount: controller.posts.length,
+            itemBuilder: (context, index) {
+              final post = controller.posts[index];
+              return buildPostCard(post);
+            },
+          ),
+        );
+      },
+    );
+  }
+  Widget buildPostCard(CommunityModel post) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      child: Card(
+        elevation: 3,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.grey[300],
+                    backgroundImage: post.photoUrl != null
+                        ? NetworkImage(post.photoUrl!)
+                        : null,
+                    radius: 24,
+                    child: post.photoUrl == null
+                        ? Text(getInitial(post.username), style: TextStyle(color: Colors.white))
+                        : null,
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(post.username, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        Text(post.time, style: TextStyle(color: Colors.grey, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                  Chip(
+                    label: Text(post.sentiment, style: TextStyle(color: Colors.white)),
+                    backgroundColor: post.sentiment.toLowerCase() == 'bullish' ? Colors.green : Colors.red,
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+              Text(post.content, style: TextStyle(fontSize: 14)),
+              SizedBox(height: 10),
+              Divider(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Comment count
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      CircleAvatar(
-                        backgroundColor: Colors.grey[300],
-                        backgroundImage: post['photoUrl'] != null
-                            ? AssetImage(post['photoUrl'])
-                            : null,
-                        radius: 24,
-                        child: post['photoUrl'] == null
-                            ? Text(
-                                post['username'][0].toUpperCase(),
-                                style: const TextStyle(color: Colors.white),
-                              )
-                            : null,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              post['username'],
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            Text(
-                              post['time'],
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Chip(
-                        label: Text(
-                          post['sentiment'],
-                          style: const TextStyle(
-                            color: Colors.white,
-                          ),
-                        ),
-                        backgroundColor: post['sentiment'] == 'Bullish'
-                            ? Colors.green
-                            : Colors.red,
-                      ),
+                      Icon(Icons.comment, size: 18, color: Colors.grey),
+                      SizedBox(width: 4),
+                      Text(post.comments.toString()),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  Text(
-                    post['content'],
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  const SizedBox(height: 10),
-                  const Divider(),
+                  // Like button
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.comment, size: 18, color: Colors.grey),
-                          const SizedBox(width: 4),
-                          Text('${post['comments']}'),
-                        ],
+                      IconButton(
+                        icon: Icon(
+                          Icons.thumb_up,
+                          size: 18,
+                          color: post.isLikedByCurrentUser ? Colors.blue : Colors.grey,
+                        ),
+                        onPressed: () {
+                          communityController.likePost(post.id);
+                        },
                       ),
-                      Row(
-                        children: [
-                          const Icon(Icons.thumb_up, size: 18, color: Colors.grey),
-                          const SizedBox(width: 4),
-                          Text('${post['likes']}'),
-                        ],
+                      SizedBox(width: 4),
+                      Text(post.likes.toString()),
+                    ],
+                  ),
+                  // Share button
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.share, size: 18, color: Colors.grey),
+                        onPressed: () {
+                          communityController.sharePost(post.id);
+                        },
                       ),
-                      Row(
-                        children: [
-                          const Icon(Icons.share, size: 18, color: Colors.grey),
-                          const SizedBox(width: 4),
-                          Text('${post['shares']}'),
-                        ],
-                      ),
+                      SizedBox(width: 4),
+                      Text(post.shares.toString()),
                     ],
                   ),
                 ],
               ),
-            ),
+              // Comments Section
+              ListView.builder(
+                shrinkWrap: true,
+                itemCount: post.commentList.length,
+                itemBuilder: (context, index) {
+                  final comment = post.commentList[index];
+                  return ListTile(
+                    title: Text(comment.username),
+                    subtitle: Text(comment.content),
+                    trailing: Text(comment.time),
+                  );
+                },
+              ),
+              // Add comment
+              TextField(
+                decoration: InputDecoration(hintText: 'Add a comment...'),
+                onSubmitted: (value) {
+                  communityController.uploadComment(post.id, value);
+                  communityController.incrementCommentCount(post.id); // Increment the comment count
+                },
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
