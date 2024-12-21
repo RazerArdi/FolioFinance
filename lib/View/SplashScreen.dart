@@ -25,7 +25,7 @@ class AnimatedSplashScreenPage extends StatelessWidget {
             ),
           ),
           AnimatedSplashScreen(
-            splash: Assets.images.logoUmm.image(),
+            splash: Assets.images.LOGO.image(),
             nextScreen: const SplashScreen(),
             splashTransition: SplashTransition.fadeTransition,
             pageTransitionType: PageTransitionType.fade,
@@ -60,7 +60,7 @@ class SplashScreen extends StatelessWidget {
           children: [
             Expanded(
               child: Center(
-                child: Assets.images.logoUmm.image(
+                child: Assets.images.LOGO.image(
                   width: 150,
                   height: 150,
                 ),

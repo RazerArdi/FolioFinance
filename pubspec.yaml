@@ -92,6 +92,9 @@ dependencies:
   connectivity_plus: ^6.1.1
   quill_native_bridge_android: ^0.0.1+2
   flutter_animate: ^4.5.2
+  fl_chart: ^0.70.0
+  google_fonts: ^6.2.1
+  percent_indicator: ^4.2.4
 dev_dependencies:
   flutter_test:
     sdk: flutter

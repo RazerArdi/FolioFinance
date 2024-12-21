@@ -10,6 +10,7 @@ class Assets {
   static const String assetsNASDAQCompanies = 'assets/NASDAQ_companies.csv';
   static const String assetsVideosIntro = 'assets/videos/Intro.webm';
   static const String audioMusic1 = 'assets/audio/music1.mp3';
+  static const String folioFinanceAssetsNASDAQCompanies = 'assets/NASDAQ_companies.csv';
   static const String iconIcLauncher = 'assets/icon/ic_launcher.png';
   static const String imagesBack = 'assets/images/back.jpg';
   static const String imagesEve = 'assets/images/eve.jpg';
@@ -18,6 +19,7 @@ class Assets {
   static const String imagesGog = 'assets/images/gog.png';
   static const String imagesIntelIcon = 'assets/images/Intel_icon.png';
   static const String imagesKarina = 'assets/images/Karina.png';
+  static const String imagesLOGO = 'assets/images/LOGO.png';
   static const String imagesLogoUmm = 'assets/images/Logo_umm.png';
   static const String imagesMicrosoft = 'assets/images/Microsoft.png';
   static const String imagesNingning = 'assets/images/Ningning.png';

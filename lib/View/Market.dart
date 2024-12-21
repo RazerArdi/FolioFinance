@@ -1,67 +1,209 @@
+import 'package:FFinance/Controllers/ConnectivityController.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:FFinance/Controllers/ConnectivityController.dart';
+import 'package:FFinance/Controllers/MarketController.dart';
 import 'AsynchronousComputingHome/AsynchronousComputingHome.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class Market extends StatelessWidget {
-  final Map<String, dynamic>? marketData;
-
-  const Market({super.key, this.marketData});
+  const Market({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final ConnectivityController connectivityController = Get.put(ConnectivityController());
+    final MarketController marketController = Get.put(MarketController());
+    marketController.fetchStockData("MSFT");
+
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFD),
       body: Obx(() {
-        // Redirect ke halaman no internet jika tidak terhubung
-        if (!connectivityController.isConnected.value) {
+        if (!Get.find<ConnectivityController>().isConnected.value) {
           return AsynchronousComputingHome();
         }
-        return SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildIHSGSection(),
-              _buildDetailsSection(),
-              _buildTrendingSection(),
-              _buildMoversSection(),
-            ],
-          ),
+
+        if (marketController.stockData.isEmpty) {
+          return const Center(
+            child: CircularProgressIndicator(
+              color: Color(0xFF2D3142),
+            ),
+          );
+        }
+
+        return CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              expandedHeight: 120,
+              floating: true,
+              backgroundColor: Colors.white,
+              elevation: 0,
+              flexibleSpace: FlexibleSpaceBar(
+                title: Text(
+                  'Market Overview',
+                  style: GoogleFonts.poppins(
+                    color: const Color(0xFF2D3142),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  _buildMicrosoftSection(marketController),
+                  _buildDetailsSection(marketController),
+                  _buildTrendingSection(marketController),
+                  _buildMoversSection(marketController),
+                ],
+              ),
+            ),
+          ],
         );
       }),
     );
   }
 
-  // Bagian IHSG Chart
-  Widget _buildIHSGSection() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
+  Widget _buildMicrosoftSection(MarketController controller) {
+    final msftData = controller.stockData['MSFT'];
+    final List<FlSpot> chartData = msftData != null
+        ? (msftData['values'] as List).asMap().entries.map((entry) {
+      final index = entry.key.toDouble();
+      final close = double.tryParse(entry.value['close'] ?? '0') ?? 0;
+      return FlSpot(index, close);
+    }).toList()
+        : [];
+
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'IHSG 7,520.60', // Data IHSG
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Microsoft (MSFT)',
+                    style: GoogleFonts.poppins(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF2D3142),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    msftData != null ? '\$${msftData['price']}' : '-',
+                    style: GoogleFonts.poppins(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF2D3142),
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: msftData != null &&
+                      double.tryParse(msftData['change'] ?? '0')! >= 0
+                      ? const Color(0xFFE8F5E9)
+                      : const Color(0xFFFFEBEE),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  msftData != null
+                      ? '${msftData['change']} (${msftData['percent_change']}%)'
+                      : '-',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: msftData != null &&
+                        double.tryParse(msftData['change'] ?? '0')! >= 0
+                        ? Colors.green[700]
+                        : Colors.red[700],
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          const Text(
-            '+40.52 (+0.54%)', // Perubahan IHSG
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.green,
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Placeholder untuk chart IHSG
-          Container(
+          const SizedBox(height: 24),
+          SizedBox(
             height: 200,
-            color: Colors.grey[300],
-            child: const Center(
-              child: Text('IHSG Chart Placeholder'), // Bisa diganti dengan widget Chart
+            child: chartData.isNotEmpty
+                ? LineChart(
+              LineChartData(
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: 1,
+                  getDrawingHorizontalLine: (value) {
+                    return FlLine(
+                      color: Colors.grey.withOpacity(0.1),
+                      strokeWidth: 1,
+                    );
+                  },
+                ),
+                titlesData: FlTitlesData(
+                  show: true,
+                  rightTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  topTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 40,
+                      getTitlesWidget: (value, meta) {
+                        return Text(
+                          '\$${value.toInt()}',
+                          style: GoogleFonts.poppins(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: chartData,
+                    isCurved: true,
+                    barWidth: 3,
+                    color: const Color(0xFF6C63FF),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: const Color(0xFF6C63FF).withOpacity(0.1),
+                    ),
+                    dotData: FlDotData(show: false),
+                  ),
+                ],
+              ),
+            )
+                : Center(
+              child: Text(
+                'No Chart Data Available',
+                style: GoogleFonts.poppins(),
+              ),
             ),
           ),
         ],
@@ -69,162 +211,354 @@ class Market extends StatelessWidget {
     );
   }
 
-  // Bagian detail IHSG seperti Open, High, Low, Volume
-  Widget _buildDetailsSection() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
+  Widget _buildDetailsSection(MarketController controller) {
+    final msftData = controller.stockData['MSFT'];
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Intraday',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+          Text(
+            'Today\'s Statistics',
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF2D3142),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 20),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildDetailItem('Open', '7,480.08'),
-              _buildDetailItem('High', '7,549.54'),
-              _buildDetailItem('Low', '7,480.08'),
+              _buildDetailItem('Open', msftData?['open'] ?? '-', 'Opening price'),
+              _buildDetailItem('High', msftData?['high'] ?? '-', 'Highest price'),
+              _buildDetailItem('Low', msftData?['low'] ?? '-', 'Lowest price'),
             ],
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Divider(),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildDetailItem('Value', msftData?['value'] ?? '-', 'Trading value'),
+              _buildDetailItem('Volume', msftData?['volume'] ?? '-', 'Trading volume'),
+              _buildDetailItem('Freq', msftData?['freq'] ?? '-', 'Trade frequency'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailItem(String title, dynamic value, String description) {
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFD),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value.toString(),
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF2D3142),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              description,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Colors.grey[500],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTrendingSection(MarketController controller) {
+    final trendingStocks = controller.stockData['popular_stocks'] ?? [];
+
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Trending Stocks',
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF2D3142),
+            ),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'All Market',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+          trendingStocks.isNotEmpty
+              ? Column(
+            children: trendingStocks.map<Widget>((stock) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFD),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF6C63FF).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Text(
+                          stock['symbol'] != null && stock['symbol']!.isNotEmpty
+                              ? stock['symbol']![0]
+                              : '?',
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF6C63FF),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            stock['symbol'] ?? 'Unknown Symbol',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF2D3142),
+                            ),
+                          ),
+                          Text(
+                            'Popular Stock',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      '\$${stock['price']}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF2D3142),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          )
+              : Center(
+            child: Text(
+              'No trending stocks available',
+              style: GoogleFonts.poppins(
+                color: Colors.grey[600],
+              ),
             ),
           ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMoversSection(MarketController controller) {
+    final movers = controller.stockData['movers'] ?? [];
+
+    return Container(
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+          Text(
+          'Top Movers',
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF2D3142),
+          ),
+        ),
+        const SizedBox(height: 16),
+        movers.isNotEmpty
+            ? Column(
+            children: movers.map<Widget>((mover) {
+        return Container(
+        margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFD),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
             children: [
-              _buildDetailItem('Value', '7.68T'),
-              _buildDetailItem('Freq', '1.00M'),
-              _buildDetailItem('Volume', '170.50M'),
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: double.tryParse(mover['value'] ?? '0')! >= 0
+                      ? const Color(0xFF4CAF50).withOpacity(0.1)
+                      : const Color(0xFFEF5350).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Text(
+                    mover['symbol'] != null && mover['symbol']!.isNotEmpty
+                        ? mover['symbol']![0]
+                        : '?',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: double.tryParse(mover['value'] ?? '0')! >= 0
+                          ? const Color(0xFF4CAF50)
+                          : const Color(0xFFEF5350),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      mover['symbol'] ?? 'Unknown Symbol',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF2D3142),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Icon(
+                          double.tryParse(mover['value'] ?? '0')! >= 0
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          size: 16,
+                          color: double.tryParse(mover['value'] ?? '0')! >= 0
+                              ? const Color(0xFF4CAF50)
+                              : const Color(0xFFEF5350),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${mover['value']}%',
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: double.tryParse(mover['value'] ?? '0')! >= 0
+                                ? const Color(0xFF4CAF50)
+                                : const Color(0xFFEF5350),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: double.tryParse(mover['value'] ?? '0')! >= 0
+                      ? const Color(0xFF4CAF50).withOpacity(0.1)
+                      : const Color(0xFFEF5350).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Mover',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: double.tryParse(mover['value'] ?? '0')! >= 0
+                        ? const Color(0xFF4CAF50)
+                        : const Color(0xFFEF5350),
+                  ),
+                ),
+              ),
             ],
           ),
-        ],
-      ),
-    );
-  }
-
-  // Helper untuk membuat tampilan detail IHSG
-  Widget _buildDetailItem(String title, String value) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          title,
-          style: const TextStyle(fontSize: 14, color: Colors.grey),
-        ),
-      ],
-    );
-  }
-
-  List<Map<String, dynamic>> getTrendingStocks(Map<String, dynamic> marketData) {
-    // Pastikan key sesuai dengan data yang dikembalikan dari API
-    if (marketData['popular_stocks'] != null && marketData['popular_stocks'] is List) {
-      return List<Map<String, dynamic>>.from(marketData['popular_stocks']);
-    } else {
-      return [];
-    }
-  }
-
-  // Bagian Trending Stocks
-  Widget _buildTrendingSection() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Trending',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+        );
+            }).toList(),
+        )
+            : Center(
+          child: Text(
+            'No movers available',
+            style: GoogleFonts.poppins(
+              color: Colors.grey[600],
             ),
           ),
-          const SizedBox(height: 8),
-          marketData != null && getTrendingStocks(marketData!).isNotEmpty
-              ? _buildTrendingStocks(getTrendingStocks(marketData!))
-              : const Text('No trending data available'),
-          // Fallback jika data trending tidak ada
-        ],
-      ),
-    );
-  }
-
-  // Fungsi untuk menampilkan list trending stocks
-  Widget _buildTrendingStocks(List<Map<String, dynamic>> trendingStocks) {
-    return Column(
-      children: trendingStocks.map((stock) {
-        return ListTile(
-          leading: CircleAvatar(
-            child: Text(stock['symbol'] != null && stock['symbol']!.isNotEmpty
-                ? stock['symbol']![0]
-                : '?'),
-          ),
-          title: Text(stock['symbol'] ?? 'Unknown Symbol'),
-          trailing: Text(stock['price'].toString() ?? 'No Data'),
-        );
-      }).toList(),
-    );
-  }
-
-  // Bagian Movers (Top Value, Top Volume, dll)
-  Widget _buildMoversSection() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Movers',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          _buildMoversList(),
-        ],
-      ),
-    );
-  }
-
-  // Placeholder list untuk movers
-  Widget _buildMoversList() {
-    // Data movers sementara
-    final movers = [
-      {'symbol': 'BBRI', 'value': '515.19B'},
-      {'symbol': 'BBCA', 'value': '467.04B'},
-      {'symbol': 'BMRI', 'value': '316.14B'},
-    ];
-
-    return Column(
-      children: movers.map((mover) {
-        return ListTile(
-          leading: CircleAvatar(
-            child: Text(mover['symbol'] != null && mover['symbol']!.isNotEmpty
-                ? mover['symbol']![0]
-                : '?'),
-          ),
-          title: Text(mover['symbol'] ?? 'Unknown Symbol'),
-          trailing: Text(mover['value'] ?? 'No Data'),
-        );
-      }).toList(),
+        ),
+          ],
+        ),
     );
   }
 }

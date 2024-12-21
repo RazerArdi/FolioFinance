@@ -62,6 +62,8 @@ class $AssetsImagesGen {
   /// File path: assets/images/github-logo.png
   AssetGenImage get video => const AssetGenImage('assets/videos/Intro.mp4');
 
+  AssetGenImage get LOGO => const AssetGenImage('assets/images/LOGO.png');
+
   /// List of all assets
   List<AssetGenImage> get values => [
         generalDynamicsSymbol,
@@ -74,7 +76,8 @@ class $AssetsImagesGen {
         winter,
         wa,
         github_logo,
-        video
+        video,
+        LOGO
       ];
 }
 

@@ -1,26 +1,24 @@
-import 'package:FFinance/widget/VideoPlayerWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:io';
-
 import 'package:FFinance/Controllers/ProfileController.dart';
 import 'package:FFinance/widget/speech_service.dart';
-import 'package:FFinance/Controllers/ConnectivityController.dart'; // Import ConnectivityController
-import 'AsynchronousComputingHome/AsynchronousComputingHome.dart'; // Import the "No Internet" page
+import 'package:FFinance/Controllers/ConnectivityController.dart';
+import 'package:FFinance/widget/VideoPlayerWidget.dart';
+import 'AsynchronousComputingHome/AsynchronousComputingHome.dart';
 
 class Profil extends StatelessWidget {
   final ProfileController controller = Get.put(ProfileController());
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final SpeechService _speechService = SpeechService();
-  final ConnectivityController connectivityController = Get.put(ConnectivityController()); // Instantiate ConnectivityController
+  final ConnectivityController connectivityController = Get.put(ConnectivityController());
 
   @override
   Widget build(BuildContext context) {
     final currentUser = _auth.currentUser;
 
-    // If no internet connection, show the "No Internet" page
     if (!connectivityController.isConnected.value) {
       return AsynchronousComputingHome();
     }
@@ -32,99 +30,243 @@ class Profil extends StatelessWidget {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        appBar: AppBar(
-          leading: const BackButton(),
-          title: Text('@${currentUser.displayName ?? currentUser.email}'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: controller.logout,
+        backgroundColor: Colors.grey[100],
+        body: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              expandedHeight: 10.0,
+              floating: false,
+              pinned: true,
+              backgroundColor: Colors.white,
+              flexibleSpace: FlexibleSpaceBar(
+                background: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.blue[400]!, Colors.blue[600]!],
+                    ),
+                  ),
+                ),
+                title: Text(
+                  '@${currentUser.displayName ?? currentUser.email}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.logout, color: Colors.white),
+                  onPressed: controller.logout,
+                ),
+              ],
+            ),
+            SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  Transform.translate(
+                    offset: const Offset(0, -40),
+                    child: GestureDetector(
+                      onTap: () => controller.pickImageOrVideo(context),
+                      child: Obx(() {
+                        return Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 4),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: CircleAvatar(
+                            radius: 60,
+                            backgroundImage: controller.profileImage.value != null
+                                ? FileImage(controller.profileImage.value!)
+                                : null,
+                            backgroundColor: Colors.white,
+                            child: controller.profileImage.value == null
+                                ? const Icon(Icons.person, size: 60, color: Colors.grey)
+                                : null,
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                  Text(
+                    currentUser.displayName ?? 'Anonymous',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '@${currentUser.displayName ?? currentUser.email}',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(25),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: TabBar(
+                      onTap: controller.changeTab,
+                      indicator: BoxDecoration(
+                        borderRadius: BorderRadius.circular(25),
+                        color: Colors.blue,
+                      ),
+                      labelColor: Colors.white,
+                      unselectedLabelColor: Colors.grey,
+                      tabs: const [
+                        Tab(text: 'Posts'),
+                        Tab(text: 'Replies'),
+                        Tab(text: 'Liked'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SliverFillRemaining(
+              child: TabBarView(
+                children: [
+                  _buildPostsList(),
+                  _buildRepliesList(),
+                  _buildLikedPostsList(),
+                ],
+              ),
             ),
           ],
-          bottom: TabBar(
-            onTap: controller.changeTab,
-            labelColor: Colors.blue,
-            unselectedLabelColor: Colors.grey,
-            tabs: const [
-              Tab(text: 'Posts'),
-              Tab(text: 'Posts & Replies'),
-              Tab(text: 'Liked'),
-            ],
-          ),
         ),
-        body: Column(
-          children: [
-            const SizedBox(height: 20),
-            GestureDetector(
-              onTap: () {
-                controller.pickImageOrVideo(context);
-              },
-              child: Obx(() {
-                return Stack(
-                  alignment: Alignment.center,
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => _showPostDialog(context),
+          label: const Text('New Post'),
+          icon: const Icon(Icons.edit),
+          backgroundColor: Colors.blue,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPostCard(Map<String, dynamic> post, int index) {
+    final timestamp = post['timestamp'] as Timestamp;
+    final dateTime = timestamp.toDate();
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      elevation: 2,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
                     CircleAvatar(
-                      radius: 50,
+                      radius: 20,
                       backgroundImage: controller.profileImage.value != null
                           ? FileImage(controller.profileImage.value!)
                           : null,
                       backgroundColor: Colors.grey[200],
                       child: controller.profileImage.value == null
-                          ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                          ? const Icon(Icons.person, size: 20, color: Colors.grey)
                           : null,
                     ),
-                    if (controller.profileImage.value != null)
-                      Positioned(
-                        right: 0,
-                        bottom: 0,
-                        child: IconButton(
-                          icon: Icon(Icons.close, color: Colors.red[400]),
-                          onPressed: controller.removeImage,
-                        ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            post['username'],
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ),
+                    ),
+                    PopupMenuButton(
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          child: ListTile(
+                            leading: const Icon(Icons.edit),
+                            title: const Text('Edit'),
+                            contentPadding: EdgeInsets.zero,
+                            onTap: () {
+                              Navigator.pop(context);
+                              _showEditPostDialog(context, index, post['content']);
+                            },
+                          ),
+                        ),
+                        PopupMenuItem(
+                          child: ListTile(
+                            leading: const Icon(Icons.delete, color: Colors.red),
+                            title: const Text('Delete', style: TextStyle(color: Colors.red)),
+                            contentPadding: EdgeInsets.zero,
+                            onTap: () {
+                              Navigator.pop(context);
+                              _showDeleteConfirmationDialog(context, index);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
-                );
-              }),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  post['content'],
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              currentUser.displayName ?? 'Anonymous',
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+          ),
+          if (post['mediaUrl'] != null && post['mediaUrl'].isNotEmpty)
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(15),
+                bottomRight: Radius.circular(15),
+              ),
+              child: post['contentType'] == 'video'
+                  ? VideoPlayerWidget(videoUrl: post['mediaUrl'])
+                  : Image.file(
+                File(post['mediaUrl']),
+                fit: BoxFit.cover,
               ),
             ),
-            Text(
-              '@${currentUser.displayName ?? currentUser.email}',
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Obx(() {
-                switch (controller.selectedTab.value) {
-                  case 0:
-                    return _buildPostsList();
-                  case 1:
-                    return _buildRepliesList();
-                  case 2:
-                    return _buildLikedPostsList();
-                  default:
-                    return Container();
-                }
-              }),
-            ),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            _showPostDialog(context);
-          },
-          heroTag: 'uniqueTagForFAB',
-          child: const Icon(Icons.edit),
-        ),
+        ],
       ),
     );
   }
@@ -132,64 +274,29 @@ class Profil extends StatelessWidget {
   Widget _buildPostsList() {
     return Obx(() {
       if (controller.posts.isEmpty) {
-        return const Center(
-          child: Text(
-            'No posts yet',
-            style: TextStyle(fontSize: 18),
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.post_add, size: 64, color: Colors.grey[400]),
+              const SizedBox(height: 16),
+              Text(
+                'No posts yet',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         );
       }
 
       return ListView.builder(
+        padding: const EdgeInsets.only(top: 16, bottom: 80),
         itemCount: controller.posts.length,
-        itemBuilder: (context, index) {
-          final post = controller.posts[index];
-          final timestamp = post['timestamp'] as Timestamp;
-          final dateTime = timestamp.toDate();
-
-          return Card(
-            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ListTile(
-                  title: Text(
-                    post['content'],
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  subtitle: Text(
-                    '${post['username']} - ${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}',
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () {
-                          _showEditPostDialog(context, index, post['content']);
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () {
-                          _showDeleteConfirmationDialog(context, index);
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                if (post['mediaUrl'] != null && post['mediaUrl'].isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: post['contentType'] == 'video'
-                        ? VideoPlayerWidget(videoUrl: post['mediaUrl'])
-                        : Image.file(File(post['mediaUrl'])),
-                  ),
-              ],
-            ),
-          );
-        },
+        itemBuilder: (context, index) => _buildPostCard(controller.posts[index], index),
       );
     });
   }
