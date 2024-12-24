@@ -1,4 +1,4 @@
-import 'package:FFinance/View/Porto.dart';
+import 'package:FFinance/View/StockPortfolioDashboard.dart';
 import 'package:FFinance/View/navigator.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -30,7 +30,7 @@ class MainPage extends StatelessWidget {
             const Market(),
             const Community(),
             Explore(),
-            const Porto(),
+            StockPortfolioDashboard(),
             Profil(),
             MusicPage(),
           ],

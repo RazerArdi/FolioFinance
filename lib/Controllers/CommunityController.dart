@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:FFinance/Models/CommunityModel.dart';
+import 'package:share_plus/share_plus.dart';
 
 class CommunityController extends GetxController {
   var posts = <CommunityModel>[].obs; // Reactive list of posts
@@ -159,18 +160,23 @@ class CommunityController extends GetxController {
     }
   }
 
-// Increment the share count for a specific post
-  Future<void> sharePost(String postId) async {
+  Future<void> sharePost(String postId, String content) async {
     try {
       var postDoc = _firestore.collection('posts').doc(postId);
+
+      // Increment share count in Firestore
       await postDoc.update({
-        'shares': FieldValue.increment(1), // Increment shares by 1
+        'shares': FieldValue.increment(1),
       });
 
-      // Fetch updated post to refresh UI
+      // Share post content to external applications
+      Share.share(content, subject: 'Check out this post!');
+
+      // Refresh posts list to reflect updated share count
       await fetchPosts();
     } catch (e) {
       error('Failed to share post: $e');
     }
   }
+
 }

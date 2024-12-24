@@ -245,8 +245,14 @@ class Profil extends StatelessWidget {
   }
 
   Widget _buildPostCard(Map<String, dynamic> post, int index) {
-    final timestamp = post['timestamp'] as Timestamp;
-    final dateTime = timestamp.toDate();
+    final timestamp = post['timestamp'];
+    DateTime dateTime;
+
+    if (timestamp != null && timestamp is Timestamp) {
+      dateTime = timestamp.toDate();
+    } else {
+      dateTime = DateTime.now(); // Nilai default jika null
+    }
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -347,6 +353,7 @@ class Profil extends StatelessWidget {
       ),
     );
   }
+
 
   void _showPostDialog(BuildContext context) {
     controller.postController.clear();

@@ -1,7 +1,7 @@
 import 'package:FFinance/View/Community.dart';
 import 'package:FFinance/View/Explore.dart';
 import 'package:FFinance/View/MainPage.dart';
-import 'package:FFinance/View/Porto.dart';
+import 'package:FFinance/View/StockPortfolioDashboard.dart';
 import 'package:FFinance/View/Profil.dart';
 import 'package:get/get.dart';
 import 'package:FFinance/View/SplashScreen.dart';
@@ -17,7 +17,7 @@ class AppRoutes {
   static const String market = '/market';
   static const String community = '/community';
   static const String explore = '/explore';
-  static const String porto = '/Porto';
+  static const String porto = '/StockPortfolioDashboard';
   static const String profil = '/Profile';
   static const String music = '/Musicpage';
   static const String register = '/register';
@@ -33,7 +33,7 @@ class AppRoutes {
     GetPage(name: market, page: () => const Market()),
     GetPage(name: community, page: () => const Community()),
     GetPage(name: explore, page: () => Explore()),
-    GetPage(name: porto, page: () => const Porto()),
+    GetPage(name: porto, page: () => StockPortfolioDashboard()),
     GetPage(name: profil, page: () => Profil()),
     GetPage(name: music, page: () => MusicPage()),
     GetPage(name: otp, page: () => OTPScreen()),
