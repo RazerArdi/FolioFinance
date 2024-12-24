@@ -1,3 +1,4 @@
+import 'package:FFinance/gen/assets.gen.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -14,7 +15,8 @@ class MusicPlayerController extends GetxController {
   }
 
   Future<void> _initAudioPlayer() async {
-    await _audioPlayer.setAudioSource(AudioSource.asset('assets/audio/music1.mp3')); // Ganti dengan path audio Anda
+    // Menggunakan path dari AssetGenAudio
+    await _audioPlayer.setAudioSource(AudioSource.asset(Assets.audios.song1.path));
     _audioPlayer.playerStateStream.listen((playerState) {
       isPlaying.value = playerState.playing;
       if (playerState.processingState == ProcessingState.ready) {

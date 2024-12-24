@@ -1,11 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart'; // Import Firebase Storage
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileController extends GetxController {
   final ImagePicker _picker = ImagePicker();
@@ -13,10 +15,12 @@ class ProfileController extends GetxController {
 
   final RxInt selectedTab = 0.obs;
   final RxList<Map<String, dynamic>> posts = RxList<Map<String, dynamic>>([]);
-  final Rx<File?> profileImage = Rx<File?>(null);
+  final Rx<File?> profileImage = Rx<File?>(null); // Profile image
   final Rx<File?> postMediaFile = Rx<File?>(null);
   final RxBool isVideo = false.obs;
   final GetStorage _getStorage = GetStorage();
+  final FirebaseStorage _storage = FirebaseStorage.instance; // Firebase Storage instance
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance; // Firestore instance
 
   @override
   void onInit() {
@@ -206,11 +210,90 @@ class ProfileController extends GetxController {
     }
   }
 
+  // Upload profile image to Firebase Storage and save URL to Firestore
+  Future<void> _uploadImage(File imageFile) async {
+    try {
+      // Upload to Firebase Storage
+      final ref = _storage.ref().child('fotoprofil/${DateTime.now().millisecondsSinceEpoch}.jpg');
+      final uploadTask = await ref.putFile(imageFile);
+      final downloadUrl = await uploadTask.ref.getDownloadURL();
+
+      // Save URL to Firestore
+      await _firestore.collection('fotoprofil').doc('profile').set({'url': downloadUrl});
+
+      // Update profile image URL locally
+      profileImage.value = imageFile;
+
+      // Clear cached image after successful upload
+      final prefs = await SharedPreferences.getInstance();
+      prefs.remove('cachedImagePath');
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to upload image: $e');
+    }
+  }
+
+  // Method to choose and upload profile image
+  Future<void> pickProfileImage(BuildContext context) async {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.camera_alt),
+                title: Text('Take a Photo'),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  await _pickProfileImageFromCamera();
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.image),
+                title: Text('Choose from Gallery'),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  await _pickProfileImageFromGallery();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _pickProfileImageFromCamera() async {
+    final XFile? imageFile = await _picker.pickImage(source: ImageSource.camera);
+    if (imageFile != null) {
+      await _uploadImage(File(imageFile.path));
+    }
+  }
+
+  Future<void> _pickProfileImageFromGallery() async {
+    PermissionStatus permission = await Permission.photos.status;
+    if (permission != PermissionStatus.granted) {
+      permission = await Permission.photos.request();
+    }
+
+    if (permission.isGranted) {
+      final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        await _uploadImage(File(pickedFile.path));
+      }
+    } else {
+      print('Gallery permission denied');
+    }
+  }
+
   void removeImage() {
     profileImage.value = null;
   }
 
   void logout() async {
+    await FirebaseAuth.instance.signOut();
     Get.offAllNamed('/FirstLogORRegister');
   }
 

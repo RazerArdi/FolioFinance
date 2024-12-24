@@ -54,7 +54,6 @@ class ConnectivityController extends GetxController {
   }
 
   void _showConnectivitySnackbar(bool connected) {
-    // Pastikan snackbar ditampilkan menggunakan metode GetX
     if (!connected) {
       Get.rawSnackbar(
         title: "No Internet",

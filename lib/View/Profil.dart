@@ -60,7 +60,7 @@ class Profil extends StatelessWidget {
               actions: [
                 IconButton(
                   icon: const Icon(Icons.logout, color: Colors.white),
-                  onPressed: controller.logout,
+                  onPressed: () => _showLogoutConfirmationDialog(context),
                 ),
               ],
             ),
@@ -167,6 +167,83 @@ class Profil extends StatelessWidget {
     );
   }
 
+  void _showLogoutConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: const Text(
+            'Logout',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          ),
+          content: const Text(
+            'Are you sure you want to log out?',
+            style: TextStyle(fontSize: 16),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+              },
+              child: const Text(
+                'No',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+              onPressed: () async {
+                // Perform logout actions
+                controller.logout();
+                Navigator.pop(context); // Close the dialog
+              },
+              child: const Text('Yes', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Methods for building lists of posts, replies, and liked posts...
+  Widget _buildPostsList() {
+    return Obx(() {
+      if (controller.posts.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.post_add, size: 64, color: Colors.grey[400]),
+              const SizedBox(height: 16),
+              Text(
+                'No posts yet',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      return ListView.builder(
+        padding: const EdgeInsets.only(top: 16, bottom: 80),
+        itemCount: controller.posts.length,
+        itemBuilder: (context, index) => _buildPostCard(controller.posts[index], index),
+      );
+    });
+  }
+
   Widget _buildPostCard(Map<String, dynamic> post, int index) {
     final timestamp = post['timestamp'] as Timestamp;
     final dateTime = timestamp.toDate();
@@ -267,56 +344,6 @@ class Profil extends StatelessWidget {
               ),
             ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPostsList() {
-    return Obx(() {
-      if (controller.posts.isEmpty) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.post_add, size: 64, color: Colors.grey[400]),
-              const SizedBox(height: 16),
-              Text(
-                'No posts yet',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        );
-      }
-
-      return ListView.builder(
-        padding: const EdgeInsets.only(top: 16, bottom: 80),
-        itemCount: controller.posts.length,
-        itemBuilder: (context, index) => _buildPostCard(controller.posts[index], index),
-      );
-    });
-  }
-
-  // Fungsi untuk menampilkan replies (Anda perlu mengimplementasikannya)
-  Widget _buildRepliesList() {
-    return const Center(
-      child: Text(
-        'No replies yet',
-        style: TextStyle(fontSize: 18),
-      ),
-    );
-  }
-
-  // Fungsi untuk menampilkan liked posts (Anda perlu mengimplementasikannya)
-  Widget _buildLikedPostsList() {
-    return const Center(
-      child: Text(
-        'No liked posts yet',
-        style: TextStyle(fontSize: 18),
       ),
     );
   }
@@ -460,6 +487,25 @@ class Profil extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+  // Fungsi untuk menampilkan replies (Anda perlu mengimplementasikannya)
+  Widget _buildRepliesList() {
+    return const Center(
+      child: Text(
+        'No replies yet',
+        style: TextStyle(fontSize: 18),
+      ),
+    );
+  }
+
+  // Fungsi untuk menampilkan liked posts (Anda perlu mengimplementasikannya)
+  Widget _buildLikedPostsList() {
+    return const Center(
+      child: Text(
+        'No liked posts yet',
+        style: TextStyle(fontSize: 18),
+      ),
     );
   }
 }

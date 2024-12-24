@@ -9,6 +9,9 @@ import 'package:FFinance/View/Market.dart';
 import 'package:FFinance/View/halaman_utama.dart';
 import 'package:FFinance/View/Profil.dart';
 import 'package:FFinance/View/Music.dart';
+import 'package:FFinance/View/navigator.dart';
+import 'package:FFinance/View/navigator.dart' as navigator_view;
+
 
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
@@ -18,7 +21,7 @@ class MainPage extends StatelessWidget {
     final MainController controller = Get.put(MainController());
 
     return Scaffold(
-      appBar: const TopNavigator(),
+      appBar: const navigator_view.TopNavigator(),
       body: Obx(() {
         return IndexedStack(
           index: controller.selectedIndex.value,

@@ -7,7 +7,31 @@
 // ignore_for_file: type=lint
 // ignore_for_file: directives_ordering,unnecessary_import,implicit_dynamic_list_literal,deprecated_member_use
 
+import 'package:FFinance/gen/assets.gen.dart';
 import 'package:flutter/widgets.dart';
+
+import 'assets.gen.dart';
+
+class $AssetsAudiosGen {
+  const $AssetsAudiosGen();
+
+  /// File path: assets/audios/song1.mp3
+  AssetGenAudio get song1 => const AssetGenAudio('assets/audios/song1.mp3');
+
+  /// List of all assets
+  List<AssetGenAudio> get values => [song1];
+}
+
+class AssetGenAudio {
+  const AssetGenAudio(this._assetName);
+
+  final String _assetName;
+
+  String get path => _assetName;
+
+  String get keyName => _assetName;
+}
+
 
 class $AssetsIconGen {
   const $AssetsIconGen();
@@ -77,7 +101,7 @@ class $AssetsImagesGen {
         wa,
         github_logo,
         video,
-        LOGO
+        LOGO,
       ];
 }
 
@@ -86,6 +110,7 @@ class Assets {
 
   static const $AssetsIconGen icon = $AssetsIconGen();
   static const $AssetsImagesGen images = $AssetsImagesGen();
+  static const $AssetsAudiosGen audios = $AssetsAudiosGen();
 }
 
 class AssetGenImage {

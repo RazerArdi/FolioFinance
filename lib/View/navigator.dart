@@ -8,7 +8,8 @@ class TopNavigator extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final MainController controller = Get.find();
+    final MainController controller = Get.put(MainController());
+    controller.loadProfileImage();
 
     return AppBar(
       title: const Text('Folio Finance'),
@@ -23,13 +24,15 @@ class TopNavigator extends StatelessWidget implements PreferredSizeWidget {
         IconButton(
           onPressed: () => _showImageSourceDialog(context),
           icon: Obx(() {
-            return controller.pickedImage.value == null
-                ? const Icon(Icons.person_outline)
-                : CircleAvatar(
-              backgroundImage: Image.file(
-                File(controller.pickedImage.value!.path),
-              ).image,
-            );
+            return controller.profileImageUrl.value.isNotEmpty
+                ? CircleAvatar(
+              backgroundImage: NetworkImage(controller.profileImageUrl.value),
+            )
+                : controller.pickedImage.value != null
+                ? CircleAvatar(
+              backgroundImage: FileImage(File(controller.pickedImage.value!.path)),
+            )
+                : const Icon(Icons.person_outline);
           }),
         ),
       ],
@@ -41,7 +44,7 @@ class TopNavigator extends StatelessWidget implements PreferredSizeWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('TESTING'),
+          title: const Text('Pilih Sumber Gambar'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -82,6 +85,7 @@ class TopNavigator extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
+
 
 
 class BottomNavigator extends StatelessWidget {

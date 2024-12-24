@@ -1,10 +1,10 @@
-import 'package:FFinance/Controllers/ConnectivityController.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:FFinance/Controllers/ConnectivityController.dart';
 import 'package:FFinance/Controllers/MarketController.dart';
 import 'AsynchronousComputingHome/AsynchronousComputingHome.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class Market extends StatelessWidget {
   const Market({super.key});
@@ -12,7 +12,7 @@ class Market extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final MarketController marketController = Get.put(MarketController());
-    marketController.fetchStockData("MSFT");
+    marketController.fetchStockData("EUR/USD");
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFD),
@@ -25,6 +25,19 @@ class Market extends StatelessWidget {
           return const Center(
             child: CircularProgressIndicator(
               color: Color(0xFF2D3142),
+            ),
+          );
+        }
+
+        final timeSeriesData = marketController.stockData['values'] as List<dynamic>?;
+        if (timeSeriesData == null || timeSeriesData.isEmpty) {
+          return Center(
+            child: Text(
+              'No data available',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
             ),
           );
         }
@@ -51,8 +64,6 @@ class Market extends StatelessWidget {
                 children: [
                   _buildMicrosoftSection(marketController),
                   _buildDetailsSection(marketController),
-                  _buildTrendingSection(marketController),
-                  _buildMoversSection(marketController),
                 ],
               ),
             ),
@@ -63,14 +74,21 @@ class Market extends StatelessWidget {
   }
 
   Widget _buildMicrosoftSection(MarketController controller) {
-    final msftData = controller.stockData['MSFT'];
-    final List<FlSpot> chartData = msftData != null
-        ? (msftData['values'] as List).asMap().entries.map((entry) {
+    final timeSeriesData = controller.stockData['values'] as List<dynamic>?;
+    if (timeSeriesData == null || timeSeriesData.isEmpty) return Container();
+
+    final latestData = timeSeriesData.first;
+    final close = double.tryParse(latestData['close']) ?? 0.0;
+    final open = double.tryParse(latestData['open']) ?? 0.0;
+    final change = close - open;
+    final percentChange = (change / open * 100).toStringAsFixed(2);
+
+    // Create chart data points
+    final List<FlSpot> chartData = timeSeriesData.asMap().entries.map((entry) {
       final index = entry.key.toDouble();
       final close = double.tryParse(entry.value['close'] ?? '0') ?? 0;
       return FlSpot(index, close);
-    }).toList()
-        : [];
+    }).toList().reversed.toList(); // Reverse to show oldest to newest
 
     return Container(
       margin: const EdgeInsets.all(16),
@@ -96,7 +114,7 @@ class Market extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Microsoft (MSFT)',
+                    'EUR/USD',
                     style: GoogleFonts.poppins(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -105,7 +123,7 @@ class Market extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    msftData != null ? '\$${msftData['price']}' : '-',
+                    '\$${close.toStringAsFixed(2)}',
                     style: GoogleFonts.poppins(
                       fontSize: 28,
                       fontWeight: FontWeight.w700,
@@ -117,23 +135,17 @@ class Market extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: msftData != null &&
-                      double.tryParse(msftData['change'] ?? '0')! >= 0
+                  color: change >= 0
                       ? const Color(0xFFE8F5E9)
                       : const Color(0xFFFFEBEE),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  msftData != null
-                      ? '${msftData['change']} (${msftData['percent_change']}%)'
-                      : '-',
+                  '${change >= 0 ? '+' : ''}${change.toStringAsFixed(2)} ($percentChange%)',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: msftData != null &&
-                        double.tryParse(msftData['change'] ?? '0')! >= 0
-                        ? Colors.green[700]
-                        : Colors.red[700],
+                    color: change >= 0 ? Colors.green[700] : Colors.red[700],
                   ),
                 ),
               ),
@@ -142,8 +154,7 @@ class Market extends StatelessWidget {
           const SizedBox(height: 24),
           SizedBox(
             height: 200,
-            child: chartData.isNotEmpty
-                ? LineChart(
+            child: LineChart(
               LineChartData(
                 gridData: FlGridData(
                   show: true,
@@ -198,12 +209,6 @@ class Market extends StatelessWidget {
                   ),
                 ],
               ),
-            )
-                : Center(
-              child: Text(
-                'No Chart Data Available',
-                style: GoogleFonts.poppins(),
-              ),
             ),
           ),
         ],
@@ -212,7 +217,10 @@ class Market extends StatelessWidget {
   }
 
   Widget _buildDetailsSection(MarketController controller) {
-    final msftData = controller.stockData['MSFT'];
+    final timeSeriesData = controller.stockData['values'] as List<dynamic>?;
+    if (timeSeriesData == null || timeSeriesData.isEmpty) return Container();
+
+    final latestData = timeSeriesData.first;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -243,9 +251,9 @@ class Market extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildDetailItem('Open', msftData?['open'] ?? '-', 'Opening price'),
-              _buildDetailItem('High', msftData?['high'] ?? '-', 'Highest price'),
-              _buildDetailItem('Low', msftData?['low'] ?? '-', 'Lowest price'),
+              _buildDetailItem('Open', latestData['open'] ?? '-', 'Opening price'),
+              _buildDetailItem('High', latestData['high'] ?? '-', 'Highest price'),
+              _buildDetailItem('Low', latestData['low'] ?? '-', 'Lowest price'),
             ],
           ),
           const Padding(
@@ -255,9 +263,9 @@ class Market extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildDetailItem('Value', msftData?['value'] ?? '-', 'Trading value'),
-              _buildDetailItem('Volume', msftData?['volume'] ?? '-', 'Trading volume'),
-              _buildDetailItem('Freq', msftData?['freq'] ?? '-', 'Trade frequency'),
+              _buildDetailItem('Close', latestData['close'] ?? '-', 'Closing price'),
+              _buildDetailItem('Volume', latestData['volume'] ?? '-', 'Trading volume'),
+              _buildDetailItem('Date', latestData['datetime']?.toString().split(' ')[0] ?? '-', 'Trading date'),
             ],
           ),
         ],
@@ -304,261 +312,6 @@ class Market extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildTrendingSection(MarketController controller) {
-    final trendingStocks = controller.stockData['popular_stocks'] ?? [];
-
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Trending Stocks',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF2D3142),
-            ),
-          ),
-          const SizedBox(height: 16),
-          trendingStocks.isNotEmpty
-              ? Column(
-            children: trendingStocks.map<Widget>((stock) {
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFD),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF6C63FF).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Center(
-                        child: Text(
-                          stock['symbol'] != null && stock['symbol']!.isNotEmpty
-                              ? stock['symbol']![0]
-                              : '?',
-                          style: GoogleFonts.poppins(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF6C63FF),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            stock['symbol'] ?? 'Unknown Symbol',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF2D3142),
-                            ),
-                          ),
-                          Text(
-                            'Popular Stock',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(
-                      '\$${stock['price']}',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF2D3142),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          )
-              : Center(
-            child: Text(
-              'No trending stocks available',
-              style: GoogleFonts.poppins(
-                color: Colors.grey[600],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMoversSection(MarketController controller) {
-    final movers = controller.stockData['movers'] ?? [];
-
-    return Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 20,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-          Text(
-          'Top Movers',
-          style: GoogleFonts.poppins(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF2D3142),
-          ),
-        ),
-        const SizedBox(height: 16),
-        movers.isNotEmpty
-            ? Column(
-            children: movers.map<Widget>((mover) {
-        return Container(
-        margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFD),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: double.tryParse(mover['value'] ?? '0')! >= 0
-                      ? const Color(0xFF4CAF50).withOpacity(0.1)
-                      : const Color(0xFFEF5350).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Text(
-                    mover['symbol'] != null && mover['symbol']!.isNotEmpty
-                        ? mover['symbol']![0]
-                        : '?',
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: double.tryParse(mover['value'] ?? '0')! >= 0
-                          ? const Color(0xFF4CAF50)
-                          : const Color(0xFFEF5350),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      mover['symbol'] ?? 'Unknown Symbol',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF2D3142),
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Icon(
-                          double.tryParse(mover['value'] ?? '0')! >= 0
-                              ? Icons.arrow_upward
-                              : Icons.arrow_downward,
-                          size: 16,
-                          color: double.tryParse(mover['value'] ?? '0')! >= 0
-                              ? const Color(0xFF4CAF50)
-                              : const Color(0xFFEF5350),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${mover['value']}%',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: double.tryParse(mover['value'] ?? '0')! >= 0
-                                ? const Color(0xFF4CAF50)
-                                : const Color(0xFFEF5350),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: double.tryParse(mover['value'] ?? '0')! >= 0
-                      ? const Color(0xFF4CAF50).withOpacity(0.1)
-                      : const Color(0xFFEF5350).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  'Mover',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: double.tryParse(mover['value'] ?? '0')! >= 0
-                        ? const Color(0xFF4CAF50)
-                        : const Color(0xFFEF5350),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-            }).toList(),
-        )
-            : Center(
-          child: Text(
-            'No movers available',
-            style: GoogleFonts.poppins(
-              color: Colors.grey[600],
-            ),
-          ),
-        ),
-          ],
-        ),
     );
   }
 }
