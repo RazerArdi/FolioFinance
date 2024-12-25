@@ -3,6 +3,7 @@ import 'package:FFinance/Controllers/AudioController.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class AudioPage extends StatelessWidget {
   final AudioController controller = Get.put(AudioController());
@@ -16,6 +17,11 @@ class AudioPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Minta izin notifikasi ketika halaman ini dimuat
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _requestNotificationPermission();
+    });
+
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -49,6 +55,27 @@ class AudioPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _requestNotificationPermission() async {
+    if (await Permission.notification.isDenied) {
+      await Permission.notification.request();
+    }
+
+    if (await Permission.notification.isPermanentlyDenied) {
+      Get.defaultDialog(
+        title: 'Notification Permission',
+        middleText:
+        'This app requires notification permission to send you updates. Please enable it in settings.',
+        textConfirm: 'Open Settings',
+        textCancel: 'Cancel',
+        confirmTextColor: Colors.white,
+        onConfirm: () {
+          Get.back();
+          openAppSettings();
+        },
+      );
+    }
   }
 
   Widget _buildRecorderSection() {

@@ -1,4 +1,5 @@
 // audio_controller.dart
+import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
@@ -51,16 +52,42 @@ class AudioController extends GetxController {
   }
 
   Future<void> requestPermissions() async {
-    // Meminta izin mikrofon
+    // Periksa izin mikrofon
     if (await Permission.microphone.isDenied) {
       await Permission.microphone.request();
     }
 
-    // Meminta izin penyimpanan
+    // Periksa izin penyimpanan
     if (await Permission.storage.isDenied) {
       await Permission.storage.request();
     }
+
+    // Periksa izin notifikasi
+    if (await Permission.notification.isDenied) {
+      await Permission.notification.request();
+    }
+
+    // Tampilkan dialog jika ada izin yang belum diberikan
+    final statuses = await [
+      Permission.microphone,
+      Permission.storage,
+      Permission.notification,
+    ].request();
+
+    if (statuses.values.any((status) => status.isDenied || status.isPermanentlyDenied)) {
+      Get.defaultDialog(
+        title: 'Izin Diperlukan',
+        middleText: 'Harap berikan semua izin untuk menggunakan aplikasi ini.',
+        textConfirm: 'Oke',
+        confirmTextColor: Colors.white,
+        onConfirm: () {
+          Get.back();
+          openAppSettings();
+        },
+      );
+    }
   }
+
 
   Future<void> startRecording() async {
     final tempDir = await getTemporaryDirectory();
