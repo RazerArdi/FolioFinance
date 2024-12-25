@@ -12,6 +12,10 @@ import 'package:FFinance/Models/NewsArticle.dart';
 import 'package:FFinance/Services/news_service.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
+import 'package:csv/csv.dart';
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class HalamanUtama extends StatelessWidget {
   final MainController controller = Get.put(MainController());
@@ -91,7 +95,6 @@ class HalamanUtama extends StatelessWidget {
               ),
             ],
           ),
-          _buildFloatingActionButton(),
           _buildConnectivityBanner(),
         ],
       ),
@@ -456,110 +459,97 @@ class HalamanUtama extends StatelessWidget {
         ],
       ),
       child: Row(
-          children: [
-      ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Image.network(
-        logoUrl,
-        width: 48,
-        height: 48,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            width: 48,
-            height: 48,
-            color: Colors.grey[200],
-            child: Icon(Icons.business, color: Colors.grey),
-          );
-        },
-      ),
-    ),
-    SizedBox(width: 16),
-    Expanded(
-    child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-    Text(
-    symbol,
-    style: TextStyle(
-    fontWeight: FontWeight.bold,
-    fontSize: 16,
-    ),
-    ),
-    SizedBox(height: 4),
-    Text(
-    '\$$price',
-    style: TextStyle(
-    color: Colors.grey[800],
-    fontSize: 14,
-    ),
-    ),
-    ],
-    ),
-    ),
-    Column(
-    crossAxisAlignment: CrossAxisAlignment.end,
-    children: [
-    Container(
-    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-    decoration: BoxDecoration(
-    color: double.parse(percentChange) >= 0
-    ? Colors.green[50]
-        : Colors.red[50],
-    borderRadius: BorderRadius.circular(8),
-    ),
-    child: Text(
-    '${double.parse(percentChange) >= 0 ? '+' : ''}$percentChange%',
-    style: TextStyle(
-    color: double.parse(percentChange) >= 0
-    ? Colors.green[700]
-        : Colors.red[700],
-    fontWeight: FontWeight.w500,
-    ),
-    ),
-    ),
-    SizedBox(height: 8),
-    SizedBox(
-    width: 80,
-    height: 30,
-    child: SfCartesianChart(
-    plotAreaBorderWidth: 0,
-    primaryXAxis: CategoryAxis(isVisible: false),
-      primaryYAxis: NumericAxis(isVisible: false),
-      margin: EdgeInsets.zero,
-      series: [
-        LineSeries<StockData, String>(
-          dataSource: stockHistory,
-          xValueMapper: (StockData stockData, _) => stockData.time,
-          yValueMapper: (StockData stockData, _) => stockData.price,
-          color: double.parse(percentChange) >= 0
-              ? Colors.green[400]
-              : Colors.red[400],
-          width: 1,
-        ),
-      ],
-    ),
-    ),
-    ],
-    ),
-          ],
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              logoUrl,
+              width: 48,
+              height: 48,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: 48,
+                  height: 48,
+                  color: Colors.grey[200],
+                  child: Icon(Icons.business, color: Colors.grey),
+                );
+              },
+            ),
+          ),
+          SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  symbol,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  '\$$price',
+                  style: TextStyle(
+                    color: Colors.grey[800],
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: double.parse(percentChange) >= 0
+                      ? Colors.green[50]
+                      : Colors.red[50],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${double.parse(percentChange) >= 0 ? '+' : ''}$percentChange%',
+                  style: TextStyle(
+                    color: double.parse(percentChange) >= 0
+                        ? Colors.green[700]
+                        : Colors.red[700],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              SizedBox(height: 8),
+              SizedBox(
+                width: 80,
+                height: 30,
+                child: SfCartesianChart(
+                  plotAreaBorderWidth: 0,
+                  primaryXAxis: CategoryAxis(isVisible: false),
+                  primaryYAxis: NumericAxis(isVisible: false),
+                  margin: EdgeInsets.zero,
+                  series: [
+                    LineSeries<StockData, String>(
+                      dataSource: stockHistory,
+                      xValueMapper: (StockData stockData, _) => stockData.time,
+                      yValueMapper: (StockData stockData, _) => stockData.price,
+                      color: double.parse(percentChange) >= 0
+                          ? Colors.green[400]
+                          : Colors.red[400],
+                      width: 1,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildFloatingActionButton() {
-    return Positioned(
-      bottom: 24,
-      right: 24,
-      child: FloatingActionButton.extended(
-        onPressed: () {},
-        backgroundColor: Colors.blue[700],
-        elevation: 4,
-        icon: Icon(Icons.add_circle_outline),
-        label: Text('Add Asset'),
-      ),
-    );
-  }
 
   Widget _buildConnectivityBanner() {
     return Positioned(

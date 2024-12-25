@@ -261,7 +261,8 @@ class _CommunityState extends State<Community> with SingleTickerProviderStateMix
                       IconButton(
                         icon: Icon(Icons.share, size: 18, color: Colors.grey),
                         onPressed: () {
-                          communityController.sharePost;
+                          // Invoke the sharePost method with the necessary parameters
+                          communityController.sharePost(post.id, post.content);
                         },
                       ),
                       SizedBox(width: 4),

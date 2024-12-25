@@ -28,5 +28,5 @@ class Assets {
   static const String videosIntro = 'assets/videos/Intro.mp4';
   static const String videosIntro2 = 'assets/videos/Intro2.mp4';
   static const String videosIntro3 = 'assets/videos/intro3.mp4';
-  static const String audiosGen = 'assets/audios/song1.mp3';
+
 }
