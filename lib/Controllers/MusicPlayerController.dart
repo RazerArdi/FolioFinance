@@ -15,17 +15,52 @@ class MusicPlayerController extends GetxController {
   }
 
   Future<void> _initAudioPlayer() async {
-    // Menggunakan path dari AssetGenAudio
-    await _audioPlayer.setAudioSource(AudioSource.asset(Assets.audios.song1.path));
-    _audioPlayer.playerStateStream.listen((playerState) {
-      isPlaying.value = playerState.playing;
-      if (playerState.processingState == ProcessingState.ready) {
-        duration.value = _audioPlayer.duration!.inMilliseconds.toDouble();
-      }
-    });
-    _audioPlayer.positionStream.listen((position) {
-      currentPosition.value = position.inMilliseconds.toDouble();
-    });
+    try {
+      // Tambahkan log untuk debug
+      print('Loading audio file: ${Assets.audios.song1.path}');
+
+      await _audioPlayer.setAudioSource(
+        AudioSource.asset(Assets.audios.song1.path),
+        // Tambahkan initialPosition
+        initialPosition: Duration.zero,
+        // Tambahkan preload
+        preload: true,
+      );
+
+      // Tambahkan error handling
+      _audioPlayer.playbackEventStream.listen(
+            (event) {
+          // Handle playback events
+        },
+        onError: (Object e, StackTrace st) {
+          print('A stream error occurred: $e');
+        },
+      );
+
+      _audioPlayer.playerStateStream.listen(
+            (playerState) {
+          isPlaying.value = playerState.playing;
+          if (playerState.processingState == ProcessingState.ready) {
+            duration.value = _audioPlayer.duration!.inMilliseconds.toDouble();
+          }
+        },
+        onError: (e) {
+          print('Error on playerStateStream: $e');
+        },
+      );
+
+      _audioPlayer.positionStream.listen(
+            (position) {
+          currentPosition.value = position.inMilliseconds.toDouble();
+        },
+        onError: (e) {
+          print('Error on positionStream: $e');
+        },
+      );
+    } catch (e, stack) {
+      print('Error initializing audio player: $e');
+      print('Stack trace: $stack');
+    }
   }
 
   void play() async {
