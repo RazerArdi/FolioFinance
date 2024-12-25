@@ -111,7 +111,7 @@ class BottomNavigator extends StatelessWidget {
         const BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Explore'),
         const BottomNavigationBarItem(icon: Icon(Icons.policy_rounded), label: 'Porto'),
         const BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
-        BottomNavigationBarItem(icon: Icon(Icons.music_note), label: 'Music') // Perbaikan di sini
+        BottomNavigationBarItem(icon: Icon(Icons.audiotrack), label: 'Memo') // Perbaikan di sini
       ],
     ));
   }

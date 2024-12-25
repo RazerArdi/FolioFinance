@@ -8,7 +8,7 @@ import 'package:FFinance/View/Explore.dart';
 import 'package:FFinance/View/Market.dart';
 import 'package:FFinance/View/halaman_utama.dart';
 import 'package:FFinance/View/Profil.dart';
-import 'package:FFinance/View/Music.dart';
+import 'package:FFinance/View/AudioPage.dart';
 import 'package:FFinance/View/navigator.dart';
 import 'package:FFinance/View/navigator.dart' as navigator_view;
 
@@ -32,7 +32,7 @@ class MainPage extends StatelessWidget {
             Explore(),
             StockPortfolioDashboard(),
             Profil(),
-            MusicPage(),
+            AudioPage(),
           ],
         );
       }),
